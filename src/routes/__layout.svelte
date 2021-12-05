@@ -1,6 +1,8 @@
 <script context="module" lang="ts">
 	import { publicPages } from '$lib/utils/constants';
+	import { initializeFirebase } from '$lib/utils/firebase';
 	export async function load({ page, fetch, session, stuff }) {
+		initializeFirebase(session.firebase);
 		if (!session.user && !publicPages.includes(page.path)) {
 			return { redirect: '/', status: 302 };
 		} else {

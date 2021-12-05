@@ -9,11 +9,13 @@ import {
 } from 'firebase/auth';
 import { session } from '$app/stores';
 import cookie from 'cookie';
-import { FIREBASE_CONFIG } from './constants';
 
-const firebaseConfig = JSON.parse(FIREBASE_CONFIG);
-
-export const app = initializeApp(firebaseConfig);
+export let app;
+export let db;
+export function initializeFirebase(options: any) {
+	app = initializeApp(options);
+	db = getFirestore(app);
+}
 
 export async function listenForAuthChanges() {
 	const auth = getAuth(app);
@@ -59,8 +61,6 @@ export async function signOut() {
 	const auth = getAuth(app);
 	await _signOut(auth);
 }
-
-export const db = getFirestore(app);
 
 export async function getDocuments<T>(collectionPath: string, uid: string): Promise<Array<T>> {
 	if (!uid) return [];

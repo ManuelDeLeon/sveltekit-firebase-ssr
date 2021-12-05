@@ -1,5 +1,4 @@
 <script context="module" lang="ts">
-	export const prerender = true;
 	export async function load({ page, fetch, session, stuff }) {
 		const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
 		if (res.ok) {

@@ -1,20 +1,17 @@
-import * as firebaseAdmin from 'firebase-admin';
+import firebaseAdmin from 'firebase-admin';
 import { FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, FIREBASE_PROJECT_ID } from './constants';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-
+const { credential, auth, firestore } = firebaseAdmin;
 const privateKey = FIREBASE_PRIVATE_KEY;
 const clientEmail = FIREBASE_CLIENT_EMAIL;
 const projectId = FIREBASE_PROJECT_ID;
 
-if (!privateKey || !clientEmail || !projectId) {
-	console.log(
-		`Failed to load Firebase credentials. Follow the instructions in the README to set your Firebase credentials inside environment variables.`
-	);
-}
-
-if (!firebaseAdmin.apps.length) {
+let initialized = false;
+function initializeFirebase() {
+	if (initialized) return;
+	initialized = true;
 	firebaseAdmin.initializeApp({
-		credential: firebaseAdmin.credential.cert({
+		credential: credential.cert({
 			privateKey: privateKey,
 			clientEmail,
 			projectId
@@ -23,23 +20,21 @@ if (!firebaseAdmin.apps.length) {
 	});
 }
 
-export { firebaseAdmin };
-
 export async function decodeToken(token: string): Promise<DecodedIdToken | null> {
 	if (!token) return null;
 	try {
-		return await firebaseAdmin.auth().verifyIdToken(token);
-	} catch {
+		initializeFirebase();
+		return await auth().verifyIdToken(token);
+	} catch (err) {
 		return null;
 	}
 }
 
 export async function getDocuments<T>(collectionPath: string, uid: string): Promise<Array<T>> {
 	if (!uid) return [];
-
-	const db = firebaseAdmin.firestore();
+	initializeFirebase();
+	const db = firestore();
 	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
-
 	let list = [];
 	querySnapshot.forEach((doc) => {
 		const document = doc.data();
@@ -51,7 +46,7 @@ export async function getDocuments<T>(collectionPath: string, uid: string): Prom
 
 export async function createDocument<T>(collectionPath: string, uid: string): Promise<T> {
 	if (!uid) return null;
-
+	initializeFirebase();
 	const db = firebaseAdmin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();
 
