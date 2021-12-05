@@ -16,7 +16,7 @@
 </script>
 
 <script lang="ts">
-	import Counter from '$lib/components/Counter/Counter.svelte';
+	import Counter from '$lib/components/counter/Counter.svelte';
 	export let counterData: Array<any> = [];
 </script>
 

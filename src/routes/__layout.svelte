@@ -16,7 +16,7 @@
 	import '../app.css';
 	import { browser } from '$app/env';
 	import { listenForAuthChanges } from '$lib/utils/firebase';
-	import Auth from '$lib/components/Auth/Auth.svelte';
+	import Auth from '$lib/components/auth/Auth.svelte';
 
 	if (browser) {
 		listenForAuthChanges();
