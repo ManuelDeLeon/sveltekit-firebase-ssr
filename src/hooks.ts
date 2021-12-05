@@ -8,7 +8,12 @@ import { FIREBASE_CONFIG } from '$lib/server/constants';
 
 export async function getSession(request: Request) {
 	const decodedToken: DecodedIdToken | null = request.locals.decodedToken;
-	const firebase = JSON.parse(FIREBASE_CONFIG);
+	let firebase;
+	try {
+		firebase = JSON.parse(FIREBASE_CONFIG);
+	} catch {
+		throw Error('Failed to load Firebase Config from: ' + FIREBASE_CONFIG);
+	}
 	if (decodedToken) {
 		const { uid, name, email } = decodedToken;
 
