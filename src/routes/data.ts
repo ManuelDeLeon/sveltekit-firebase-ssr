@@ -9,7 +9,6 @@ export const get: RequestHandler = async (request) => {
 
 	const collectionPath = request.query.get('collectionPath');
 	const docs = await getDocuments(collectionPath, uid);
-	docs.push(decodedToken);
 	if (!docs.length && request.query.get('createIfNone')) {
 		const doc = await createDocument(collectionPath, uid);
 		docs.push(doc);
