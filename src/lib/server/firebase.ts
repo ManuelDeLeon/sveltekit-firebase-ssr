@@ -7,18 +7,17 @@ const privateKey = FIREBASE_PRIVATE_KEY;
 const clientEmail = FIREBASE_CLIENT_EMAIL;
 const projectId = FIREBASE_PROJECT_ID;
 
-let initialized = false;
 function initializeFirebase() {
-	if (initialized) return;
-	initialized = true;
-	admin.initializeApp({
-		credential: admin.credential.cert({
-			privateKey: privateKey,
-			clientEmail,
-			projectId
-		}),
-		databaseURL: `https://${projectId}.firebaseio.com`
-	});
+	if (!admin.apps.length) {
+		admin.initializeApp({
+			credential: admin.credential.cert({
+				privateKey: privateKey,
+				clientEmail,
+				projectId
+			}),
+			databaseURL: `https://${projectId}.firebaseio.com`
+		});
+	}
 }
 
 export async function decodeToken(token: string): Promise<DecodedIdToken | null> {
