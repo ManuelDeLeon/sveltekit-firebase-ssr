@@ -31,7 +31,7 @@ export const handle: Handle = async ({ request, resolve }) => {
 		// If you are not logged in and you are not on a public page,
 		// it just redirects you to the main page, which is / in this case.
 		return {
-			headers: { Location: '/' },
+			headers: { Location: '/', err: request.locals.decodedToken },
 			status: 302
 		};
 	}

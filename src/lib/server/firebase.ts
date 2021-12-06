@@ -27,7 +27,7 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
 		console.log('decodeToken error', err);
-		return null;
+		return err.message;
 	}
 }
 
