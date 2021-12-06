@@ -1,17 +1,21 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session, stuff }) {
-		const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
-		if (res.ok) {
-			const counterData = await res.json();
-			return {
-				props: { counterData }
-			};
-		}
+		if (session.user) {
+			const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
+			if (res.ok) {
+				const counterData = await res.json();
+				return {
+					props: { counterData }
+				};
+			}
 
-		const { message } = await res.json();
-		return {
-			error: new Error(message)
-		};
+			const { message } = await res.json();
+			return {
+				error: new Error(message)
+			};
+		} else {
+			return {};
+		}
 	}
 </script>
 

@@ -13,11 +13,17 @@ import cookie from 'cookie';
 export let app;
 export let db;
 export function initializeFirebase(options: any) {
-	app = initializeApp(options);
-	db = getFirestore(app);
+	if (!app) {
+		app = initializeApp(options);
+		db = getFirestore(app);
+	}
 }
 
+let listening = false;
 export async function listenForAuthChanges() {
+	if (listening) return;
+	listening = true;
+
 	const auth = getAuth(app);
 
 	onIdTokenChanged(

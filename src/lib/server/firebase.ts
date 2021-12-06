@@ -1,21 +1,13 @@
-import { FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, FIREBASE_PROJECT_ID } from './constants';
+import { FIREBASE_SERVER_CONFIG } from './constants';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-
 import admin from 'firebase-admin';
-
-const privateKey = FIREBASE_PRIVATE_KEY;
-const clientEmail = FIREBASE_CLIENT_EMAIL;
-const projectId = FIREBASE_PROJECT_ID;
 
 function initializeFirebase() {
 	if (!admin.apps.length) {
+		const serviceAccount = JSON.parse(FIREBASE_SERVER_CONFIG);
 		admin.initializeApp({
-			credential: admin.credential.cert({
-				privateKey: privateKey,
-				clientEmail,
-				projectId
-			}),
-			databaseURL: `https://${projectId}.firebaseio.com`
+			credential: admin.credential.cert(serviceAccount),
+			databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
 		});
 	}
 }

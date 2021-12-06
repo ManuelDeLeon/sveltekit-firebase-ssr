@@ -1,8 +1,12 @@
 <script context="module" lang="ts">
 	import { publicPages } from '$lib/utils/constants';
-	import { initializeFirebase } from '$lib/utils/firebase';
+	import { initializeFirebase, listenForAuthChanges } from '$lib/utils/firebase';
+	import { browser } from '$app/env';
 	export async function load({ page, fetch, session, stuff }) {
-		initializeFirebase(session.firebase);
+		if (browser) {
+			initializeFirebase(session.firebaseClientConfig);
+			listenForAuthChanges();
+		}
 		if (!session.user && !publicPages.includes(page.path)) {
 			return { redirect: '/', status: 302 };
 		} else {
@@ -13,14 +17,8 @@
 
 <script lang="ts">
 	import Header from '$lib/components/header/Header.svelte';
-	import '../app.css';
-	import { browser } from '$app/env';
-	import { listenForAuthChanges } from '$lib/utils/firebase';
 	import Auth from '$lib/components/auth/Auth.svelte';
-
-	if (browser) {
-		listenForAuthChanges();
-	}
+	import '../app.css';
 </script>
 
 <Header />
