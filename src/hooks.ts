@@ -30,10 +30,10 @@ export const handle: Handle = async ({ request, resolve }) => {
 	if (!request.locals.decodedToken && !publicPages.includes(request.path)) {
 		// If you are not logged in and you are not on a public page,
 		// it just redirects you to the main page, which is / in this case.
-		return {
-			headers: { Location: '/' },
-			status: 302
-		};
+		// return {
+		// 	headers: { Location: '/' },
+		// 	status: 302
+		// };
 	}
 
 	// TODO https://github.com/sveltejs/kit/issues/1046
@@ -42,6 +42,8 @@ export const handle: Handle = async ({ request, resolve }) => {
 	}
 
 	const response = await resolve(request);
+
+	response.headers['err'] = request.locals.decodedToken;
 
 	if (!cookies.userid) {
 		// if this is the first time the user has visited this app,

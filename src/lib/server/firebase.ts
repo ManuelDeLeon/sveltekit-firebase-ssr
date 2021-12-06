@@ -27,8 +27,8 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 		initializeFirebase();
 		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
-		console.log('decodeToken error', err);
-		return null;
+		console.log('decodeToken error', err.message);
+		return err.message;
 	}
 }
 
