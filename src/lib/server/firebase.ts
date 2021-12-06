@@ -1,6 +1,7 @@
-import firebaseAdmin from 'firebase-admin';
 import { FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, FIREBASE_PROJECT_ID } from './constants';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+
+import admin from 'firebase-admin';
 
 const privateKey = FIREBASE_PRIVATE_KEY;
 const clientEmail = FIREBASE_CLIENT_EMAIL;
@@ -10,8 +11,8 @@ let initialized = false;
 function initializeFirebase() {
 	if (initialized) return;
 	initialized = true;
-	firebaseAdmin.initializeApp({
-		credential: firebaseAdmin.credential.cert({
+	admin.initializeApp({
+		credential: admin.credential.cert({
 			privateKey: privateKey,
 			clientEmail,
 			projectId
@@ -24,8 +25,9 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 	if (!token) return null;
 	try {
 		initializeFirebase();
-		return await firebaseAdmin.auth().verifyIdToken(token);
+		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
+		console.log('decodeToken error', err);
 		return null;
 	}
 }
@@ -33,7 +35,7 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 export async function getDocuments<T>(collectionPath: string, uid: string): Promise<Array<T>> {
 	if (!uid) return [];
 	initializeFirebase();
-	const db = firebaseAdmin.firestore();
+	const db = admin.firestore();
 	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
 	let list = [];
 	querySnapshot.forEach((doc) => {
@@ -47,7 +49,7 @@ export async function getDocuments<T>(collectionPath: string, uid: string): Prom
 export async function createDocument<T>(collectionPath: string, uid: string): Promise<T> {
 	if (!uid) return null;
 	initializeFirebase();
-	const db = firebaseAdmin.firestore();
+	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();
 
 	let document = null;

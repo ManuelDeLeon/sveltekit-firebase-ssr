@@ -16,7 +16,7 @@
 			enable source maps by default.
 			*/
 		"sourceMap": true,
-		"esModuleInterop": false,
+		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"baseUrl": ".",
@@ -25,7 +25,8 @@
 		"paths": {
 			"$lib": ["src/lib"],
 			"$lib/*": ["src/lib/*"]
-		}
+		},
+		"allowSyntheticDefaultImports": true
 	},
 	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
 }
