@@ -1,6 +1,7 @@
 import { FIREBASE_SERVER_CONFIG } from './constants';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import admin from 'firebase-admin';
+import type { Document } from '$lib/models/Document';
 
 function initializeFirebase() {
 	if (!admin.apps.length) {
@@ -23,28 +24,26 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 	}
 }
 
-export async function getDocuments<T>(collectionPath: string, uid: string): Promise<Array<T>> {
+export async function getDocuments(collectionPath: string, uid: string): Promise<Array<Document>> {
 	if (!uid) return [];
 	initializeFirebase();
 	const db = admin.firestore();
 	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
-	let list = [];
+	let list: Array<Document> = [];
 	querySnapshot.forEach((doc) => {
-		const document = doc.data();
-		document.id = doc.id;
+		const document: Document = <Document>doc.data(); // Just need the data on the server
+		document._id = doc.id;
 		list.push(document);
 	});
 	return list;
 }
 
-export async function createDocument<T>(collectionPath: string, uid: string): Promise<T> {
-	if (!uid) return null;
+export async function createDocument(collectionPath: string, uid: string): Promise<Document> {
 	initializeFirebase();
 	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();
 
-	let document = null;
-	document = doc.data();
-	document.id = doc.id;
+	let document = <Document>doc.data(); // Just need the data on the server
+	document._id = doc.id;
 	return document;
 }

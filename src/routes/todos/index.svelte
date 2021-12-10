@@ -20,9 +20,15 @@
 	import { flip } from 'svelte/animate';
 	import { Todo } from '$lib/models/Todo';
 	import { session } from '$app/stores';
+	import { deleteDocument, getCollectionStore, saveDocument } from '$lib/utils/firebase';
 
 	export let todosData: Array<any>;
-	let todos: Todo[] = todosData.map((t) => new Todo(t));
+	let todos = getCollectionStore(
+		Todo,
+		'todos',
+		$session.user.uid,
+		todosData.map((t) => new Todo(t))
+	);
 
 	let newTodoText = '';
 
@@ -30,29 +36,23 @@
 		const todo = new Todo();
 		todo.uid = (await $session).user.uid;
 		todo.text = newTodoText;
-		todo.save();
-
-		todos = [...todos, todo];
-
+		saveDocument(todo);
 		newTodoText = '';
 	}
 
 	async function toggleDone(todo: Todo) {
 		todo.done = !todo.done;
-		todo.save();
-		todos = todos;
+		saveDocument(todo);
 	}
 
 	async function updateTodo(todo: Todo) {
-		todo.save();
-		todos = todos;
+		saveDocument(todo);
 		(<any>document.activeElement).blur();
 	}
 
 	async function deleteTodo(todo: Todo) {
 		todo.pending_delete = true;
-		todo.delete();
-		todos = todos.filter((t) => t.id !== todo.id);
+		deleteDocument(todo);
 	}
 </script>
 
@@ -72,7 +72,7 @@
 		/>
 	</form>
 
-	{#each todos as todo (todo.id)}
+	{#each $todos as todo (todo._id)}
 		<div
 			class="todo"
 			class:done={todo.done}

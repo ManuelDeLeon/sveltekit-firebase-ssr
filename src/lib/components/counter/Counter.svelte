@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Count } from '$lib/models/Count';
+	import { getDocumentStore, saveDocument } from '$lib/utils/firebase';
 	import { spring } from 'svelte/motion';
 
 	export let counterData: Array<any> = [];
-	const countDoc = new Count(counterData[0]);
-	const count = countDoc.getStore();
+	const count = getDocumentStore(Count, new Count(counterData[0]));
 
 	const displayed_count = spring();
 	$: displayed_count.set($count.count);
@@ -16,12 +16,14 @@
 	}
 
 	function decrement() {
-		countDoc.count -= 1;
-		countDoc.save();
+		const doc = $count;
+		doc.count -= 1;
+		saveDocument($count);
 	}
 	function increment() {
-		countDoc.count += 1;
-		countDoc.save();
+		const doc = $count;
+		doc.count += 1;
+		saveDocument($count);
 	}
 </script>
 
