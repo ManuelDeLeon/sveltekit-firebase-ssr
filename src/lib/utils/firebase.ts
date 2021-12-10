@@ -152,6 +152,7 @@ export function getDocumentStore<T extends Document>(
 				dbUnsubscribe = onSnapshot(doc(db, document._collection, document._id), (doc) => {
 					if (doc.exists()) {
 						const newDoc = new type(doc.data());
+						newDoc._id = doc.id;
 						set(newDoc);
 					} else {
 						set(undefined);

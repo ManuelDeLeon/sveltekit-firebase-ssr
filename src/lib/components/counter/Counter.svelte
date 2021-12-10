@@ -18,12 +18,12 @@
 	function decrement() {
 		const doc = $count;
 		doc.count -= 1;
-		saveDocument($count);
+		saveDocument(doc);
 	}
 	function increment() {
 		const doc = $count;
 		doc.count += 1;
-		saveDocument($count);
+		saveDocument(doc);
 	}
 </script>
 
