@@ -2,6 +2,12 @@
 
 This is an example/boilerplate/starter of the SvelteKit sample app with Firebase authentication and SSR that has user data.
 
+## Live example
+
+https://sveltekit-firebase-ssr.vercel.app/
+
+(counter and todos data subject to random deletion. Don't plan your day with it.)
+
 ## Setup
 
 Create a `.env.development` file at the root of the folder with the following entries:
