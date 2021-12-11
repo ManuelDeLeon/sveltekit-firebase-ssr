@@ -1,10 +1,27 @@
+<script context="module">
+	export async function getCounterData(fetch, session) {
+		if (session.user) {
+			const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
+			if (res.ok) {
+				const counterDataList = await res.json();
+				return counterDataList[0];
+			}
+
+			const { message } = await res.json();
+			throw Error(message);
+		} else {
+			return null;
+		}
+	}
+</script>
+
 <script lang="ts">
 	import { Count } from '$lib/models/Count';
 	import { getDocumentStore, saveDocument } from '$lib/utils/firebase';
 	import { spring } from 'svelte/motion';
 
-	export let counterData: Array<any> = [];
-	const count = getDocumentStore(Count, new Count(counterData[0]));
+	export let counterData: Partial<Count>;
+	const count = getDocumentStore(Count, new Count(counterData));
 
 	const displayed_count = spring();
 	$: displayed_count.set($count.count);

@@ -14,12 +14,12 @@ function initializeFirebase() {
 }
 
 export async function decodeToken(token: string): Promise<DecodedIdToken | null> {
-	if (!token) return null;
+	if (!token || token === 'null' || token === 'undefined') return null;
 	try {
 		initializeFirebase();
 		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
-		console.log('decodeToken error', err);
+		console.log('decodeToken error:\n', err);
 		return null;
 	}
 }
