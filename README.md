@@ -7,10 +7,48 @@ This is an example/boilerplate/starter of the SvelteKit sample app with Firebase
 Create a `.env.development` file at the root of the folder with the following entries:
 
 ```
-VITE_FIREBASE_PRIVATE_KEY="Your key, including all \n"
-VITE_FIREBASE_CLIENT_EMAIL="client email"
-VITE_FIREBASE_PROJECT_ID="project id"
-VITE_FIREBASE_CONFIG='Your Firebase config json, stringified'
+VITE_FIREBASE_CLIENT_CONFIG="Your **client** Firebase config json, stringified"
+VITE_FIREBASE_SERVER_CONFIG="Your **server** Firebase config json, stringified"
+```
+
+### VITE_FIREBASE\_**CLIENT**\_CONFIG
+
+This value will be sent to the client in the user's session. See `src/hooks.ts`
+
+The (non-stringified) json has this shape:
+
+```
+{
+    "apiKey": "",
+    "authDomain": "",
+    "databaseURL": "",
+    "projectId": "",
+    "storageBucket": "",
+    "messagingSenderId": "",
+    "appId": "",
+    "measurementId": ""
+}
+```
+
+### VITE_FIREBASE\_**SERVER**\_CONFIG
+
+This value is only used to retrieve data from Firebase on the server. See `src/lib/server/firebase.ts`
+
+The (non-stringified) json has this shape:
+
+```
+{
+    "type": "",
+    "project_id": "",
+    "private_key_id": "",
+    "private_key": "",
+    "client_email": "",
+    "client_id": "",
+    "auth_uri": "",
+    "token_uri": "",
+    "auth_provider_x509_cert_url": "",
+    "client_x509_cert_url": ""
+}
 ```
 
 ## Authenticating the user
@@ -27,19 +65,19 @@ The `handle` function in `/src/hooks.ts` reads the cookie and decodes the token 
 
 Because reading on the server requires `firebase-admin` which uses a project's private key, DB operations are separated into the following:
 
-- `/src/lib/server/firebaseAdmin.ts` for the server.
+- `/src/lib/server/firebase.ts` for the server.
 - `/src/lib/utils/firebase.ts` for the client.
 - `/src/routes/data.ts` to get the components' initial data from both client and server.
 
 ## Todos component
 
-The `load` function in `/src/routes/todos/index.svelte` fetches the list of todos from `/data`. `/src/routes/data.ts` always runs on the server and it will decode the user's token from a cookie and use `/src/lib/server/firebaseAdmin.ts` to retireve the documents using `getDocuments`. The result is passed to the component via `props`.
+The `load` function in `/src/routes/todos/index.svelte` fetches the list of todos from `/data`. `/src/routes/data.ts` always runs on the server and it will decode the user's token from a cookie and use `/src/lib/server/firebase.ts` to retireve the documents using `getDocuments`. The result is passed to the component via `props`.
 
 ## Models
 
 At risk of angering the FP gods I decided to go with classes for the document models.
-`/src/lib/models/Document.ts` is the base class for Firebase documents. It has a `save()` and a `delete()` method. `__collection` is to be overridden with the path to the collection. `__dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
-`/src/lib/models/Todo.ts` holds the definition of the `Todo` item. The constructor adds the fields it wants to persist in the DB (text and done). It also overrides `__collection` with the name of the Firebase collection (`'todos'`).
+`/src/lib/models/Document.ts` is the base class for Firebase documents. `_collection` is to be overridden with the path to the collection. `_dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
+`/src/lib/models/Todo.ts` holds the definition of the `Todo` item. The constructor adds the fields it wants to persist in the DB (text and done). It also overrides `_collection` with the name of the Firebase collection (`'todos'`).
 
 ## Firebase reactivity
 
@@ -49,9 +87,13 @@ You can open 2 browser windows and see how one changes with the other (as long a
 
 The `Counter` component doesn't display on the home page if the user isn't logged in.
 
+`Counter` uses the helper method `/src/lib/utils/firebase.ts -> getDocumentStore` to react to changes in a single document (there's one counters document in Firebase for each user).
+
+`Todos` uses the helper method `/src/lib/utils/firebase.ts -> getCollectionStore` to react to changes in all todos documents for the given user.
+
 ## Protecting routes
 
 There are two ways to protect a route, with `hooks.ts` and `__layout.svelte`.
 
-In this example we have a `publicPages` constant with the list of pages which can be accessed without logging in. In `hooks.ts` handle we check for the token and if the user isn't logged in we send them to the home page.
+In this example we have a `publicPages` constant with the list of pages which can be accessed without logging in. In `hooks.ts` `handle` we check for the token and if the user isn't logged in we send them to the home page.
 The same check is performed at the layout level.
