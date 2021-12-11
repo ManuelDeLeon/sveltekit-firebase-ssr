@@ -1,9 +1,11 @@
-<script context="module">
+<script context="module" lang="ts">
+	export const counterDataReady = writable(false);
 	export async function getCounterData(fetch, session) {
 		if (session.user) {
 			const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
 			if (res.ok) {
 				const counterDataList = await res.json();
+				counterDataReady.set(true);
 				return counterDataList[0];
 			}
 
@@ -19,10 +21,10 @@
 	import { Count } from '$lib/models/Count';
 	import { getDocumentStore, saveDocument } from '$lib/utils/firebase';
 	import { spring } from 'svelte/motion';
-
+	import { writable } from 'svelte/store';
 	export let counterData: Partial<Count>;
-	const count = getDocumentStore(Count, new Count(counterData));
 
+	const count = getDocumentStore(Count, new Count(counterData));
 	const displayed_count = spring();
 	$: displayed_count.set($count.count);
 	$: offset = modulo($displayed_count, 1);
