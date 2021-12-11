@@ -38,7 +38,9 @@
 			</picture>
 		</div>
 
-		to your new<br />SvelteKit app
+		to your new<br />
+		SvelteKit + Firebase + SSR with user data<br />
+		Sign in to see the counter and todos pages
 	</h1>
 
 	<h2>
