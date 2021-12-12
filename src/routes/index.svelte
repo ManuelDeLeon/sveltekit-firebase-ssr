@@ -10,10 +10,7 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
-	import Counter, {
-		getCounterData,
-		counterDataReady
-	} from '$lib/components/counter/Counter.svelte';
+	import Counter, { getCounterData } from '$lib/components/counter/Counter.svelte';
 	import type { Count } from '$lib/models/Count';
 	export let counterData: Partial<Count>;
 </script>
@@ -40,7 +37,7 @@
 		try editing <strong>src/routes/index.svelte</strong>
 	</h2>
 
-	{#if $session.user && $counterDataReady}
+	{#if $session.user && counterData}
 		<Counter {counterData} />
 	{/if}
 </section>

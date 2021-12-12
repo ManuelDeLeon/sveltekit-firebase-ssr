@@ -1,11 +1,9 @@
 <script context="module" lang="ts">
-	export const counterDataReady = writable(false);
 	export async function getCounterData(fetch, session) {
 		if (session.user) {
 			const res = await fetch(`/data?collectionPath=counters&createIfNone=true`);
 			if (res.ok) {
 				const counterDataList = await res.json();
-				counterDataReady.set(true);
 				return counterDataList[0];
 			}
 
