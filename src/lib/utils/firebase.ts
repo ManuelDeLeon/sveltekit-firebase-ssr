@@ -31,14 +31,11 @@ export function initializeFirebase(options: any) {
 	if (!app) {
 		app = initializeApp(options);
 		db = getFirestore(app);
+		listenForAuthChanges();
 	}
 }
 
-let listening = false;
-export async function listenForAuthChanges() {
-	if (listening) return;
-	listening = true;
-
+function listenForAuthChanges() {
 	const auth = getAuth(app);
 
 	onIdTokenChanged(
