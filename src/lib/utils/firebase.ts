@@ -19,7 +19,6 @@ import {
 	onIdTokenChanged
 } from 'firebase/auth';
 import { session } from '$app/stores';
-import cookie from 'cookie';
 import { browser } from '$app/env';
 import { readable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
@@ -41,9 +40,9 @@ function listenForAuthChanges() {
 	onIdTokenChanged(
 		auth,
 		async (user) => {
-			let token = null;
 			if (user) {
-				token = await user.getIdToken();
+				const token = await user.getIdToken();
+				await setToken(token);
 				session.update((oldSession) => {
 					oldSession.user = {
 						name: user.displayName,
@@ -53,12 +52,24 @@ function listenForAuthChanges() {
 					return oldSession;
 				});
 			} else {
+				await setToken(null);
 				session.set({});
 			}
-			document.cookie = cookie.serialize('token', token, { path: '/' });
 		},
 		(err) => console.error(err.message)
 	);
+}
+
+async function setToken(token: string) {
+	let options = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json;charset=utf-8'
+		},
+		body: JSON.stringify({ token })
+	};
+
+	await fetch('/api/token', options);
 }
 
 function providerFor(name: string) {

@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session, stuff }) {
-		const res = await fetch(`/data?collectionPath=todos`);
+		const res = await fetch(`/api/data?collectionPath=todos`);
 		if (res.ok) {
 			const todosData = await res.json();
 			return {

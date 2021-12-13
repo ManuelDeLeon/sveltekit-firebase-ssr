@@ -1,1 +1,1 @@
-export const publicPages = ['/', '/api', '/about'];
+export const publicPages = ['/', '/api/data', '/api/token', '/about'];

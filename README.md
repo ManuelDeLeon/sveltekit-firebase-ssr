@@ -73,11 +73,11 @@ Because reading on the server requires `firebase-admin` which uses a project's p
 
 - `/src/lib/server/firebase.ts` for the server.
 - `/src/lib/utils/firebase.ts` for the client.
-- `/src/routes/data.ts` to get the components' initial data from both client and server.
+- `/src/routes/api/data.ts` to get the components' initial data from both client and server.
 
 ## Todos component
 
-The `load` function in `/src/routes/todos/index.svelte` fetches the list of todos from `/data`. `/src/routes/data.ts` always runs on the server and it will decode the user's token from a cookie and use `/src/lib/server/firebase.ts` to retireve the documents using `getDocuments`. The result is passed to the component via `props`.
+The `load` function in `/src/routes/todos/index.svelte` fetches the list of todos from `/api/data`. `/src/routes/api/data.ts` always runs on the server and it will decode the user's token from a cookie and use `/src/lib/server/firebase.ts` to retireve the documents using `getDocuments`. The result is passed to the component via `props`.
 
 ## Models
 

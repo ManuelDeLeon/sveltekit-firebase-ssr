@@ -5,6 +5,11 @@ import cookie from 'cookie';
 export const get: RequestHandler = async (request) => {
 	const cookies = cookie.parse(request.headers.cookie || '');
 	const decodedToken = await decodeToken(cookies.token);
+	if (!decodedToken) {
+		return {
+			status: 401
+		};
+	}
 	const uid = decodedToken.uid;
 
 	const collectionPath = request.query.get('collectionPath');
