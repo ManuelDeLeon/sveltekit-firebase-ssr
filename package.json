@@ -13,8 +13,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/adapter-netlify": "^1.0.0-next.35",
-		"@sveltejs/adapter-vercel": "^1.0.0-next.31",
+		"@sveltejs/adapter-cloudflare": "^1.0.0-next.2",
 		"@sveltejs/kit": "next",
 		"@types/cookie": "^0.4.1",
 		"@typescript-eslint/eslint-plugin": "^5.6.0",
