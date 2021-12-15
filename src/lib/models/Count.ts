@@ -1,7 +1,8 @@
+import type { AnyObject } from '$lib/utils/types';
 import { Document } from './Document';
 
 export class Count extends Document {
-	constructor(data: Object = null) {
+	constructor(data: AnyObject = {}) {
 		super(data);
 		this._load(data);
 		this._dbFields.push('count');

@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import type { FirebaseApp, FirebaseOptions } from 'firebase/app';
 import {
 	collection,
 	getDocs,
@@ -9,7 +10,8 @@ import {
 	doc,
 	onSnapshot,
 	setDoc,
-	deleteDoc
+	deleteDoc,
+	Firestore
 } from 'firebase/firestore';
 import {
 	getAuth,
@@ -21,12 +23,12 @@ import {
 import { session } from '$app/stores';
 import { browser } from '$app/env';
 import { readable } from 'svelte/store';
-import type { Readable } from 'svelte/store';
 import type { Document } from '$lib/models/Document';
+import type { AnyObject } from './types';
 
-export let app;
-export let db;
-export function initializeFirebase(options: any) {
+export let app: FirebaseApp;
+export let db: Firestore;
+export function initializeFirebase(options: FirebaseOptions) {
 	if (!app) {
 		app = initializeApp(options);
 		db = getFirestore(app);
@@ -52,7 +54,7 @@ function listenForAuthChanges() {
 					return oldSession;
 				});
 			} else {
-				await setToken(null);
+				await setToken('');
 				session.set({});
 			}
 		},
@@ -61,7 +63,7 @@ function listenForAuthChanges() {
 }
 
 async function setToken(token: string) {
-	let options = {
+	const options = {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json;charset=utf-8'
@@ -92,7 +94,7 @@ export async function signOut() {
 }
 
 export async function getDocuments<T extends Document>(
-	type: { new (data: Object): T },
+	type: { new (data: AnyObject): T },
 	collectionPath: string,
 	uid: string
 ): Promise<Array<T>> {
@@ -102,7 +104,7 @@ export async function getDocuments<T extends Document>(
 	const q = query(collection(db, collectionPath), where('uid', '==', uid));
 	const querySnapshot = await getDocs(q);
 
-	let list: Array<T> = [];
+	const list: Array<T> = [];
 	querySnapshot.forEach((doc) => {
 		const document = new type(doc.data());
 		document._id = doc.id;
@@ -130,25 +132,23 @@ export async function deleteDocument(document: Document) {
 }
 
 function getDbObject(document: Document): Partial<Document> {
-	const obj = {};
+	const obj: AnyObject = {};
 	Object.keys(document)
 		.filter((k) => document._dbFields.includes(k))
 		.forEach((k) => {
-			obj[k] = document[k];
+			obj[k] = document[k as keyof Document];
 		});
 	return obj;
 }
 
 export function getDocumentStore<T extends Document>(
-	type: { new (data: Object): T },
+	type: { new (data: AnyObject): T },
 	document: T
-): Readable<T> {
-	return readable<T>(null, (set) => {
-		set(document);
-
+) {
+	return readable<T | undefined>(document, (set) => {
 		let dbUnsubscribe: () => void;
 		let unsubbed = false;
-		let unsub = () => {
+		const unsub = () => {
 			unsubbed = true;
 			if (dbUnsubscribe) {
 				dbUnsubscribe();
@@ -175,17 +175,15 @@ export function getDocumentStore<T extends Document>(
 }
 
 export function getCollectionStore<T extends Document>(
-	type: { new (data: Object): T },
+	type: { new (data: AnyObject): T },
 	collectionPath: string,
 	uid: string,
 	initialData: Array<T> = []
 ) {
-	return readable(null, (set) => {
-		set(initialData);
-
+	return readable<Array<T>>(initialData, (set) => {
 		let dbUnsubscribe: () => void;
 		let unsubbed = false;
-		let unsub = () => {
+		const unsub = () => {
 			unsubbed = true;
 			if (dbUnsubscribe) {
 				dbUnsubscribe();
@@ -196,7 +194,7 @@ export function getCollectionStore<T extends Document>(
 				if (unsubbed) return;
 				const q = query(collection(db, collectionPath), where('uid', '==', uid));
 				dbUnsubscribe = onSnapshot(q, (docs) => {
-					const newDocuments = [];
+					const newDocuments: Array<T> = [];
 					docs.forEach((doc) => {
 						const newDoc = new type(doc.data());
 						newDoc._id = doc.id;

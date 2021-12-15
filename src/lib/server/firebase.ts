@@ -19,7 +19,6 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 		initializeFirebase();
 		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
-		console.error('decodeToken error:\n', err);
 		return null;
 	}
 }
@@ -29,7 +28,7 @@ export async function getDocuments(collectionPath: string, uid: string): Promise
 	initializeFirebase();
 	const db = admin.firestore();
 	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
-	let list: Array<Document> = [];
+	const list: Array<Document> = [];
 	querySnapshot.forEach((doc) => {
 		const document: Document = <Document>doc.data(); // Just need the data on the server
 		document._id = doc.id;
@@ -43,7 +42,7 @@ export async function createDocument(collectionPath: string, uid: string): Promi
 	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();
 
-	let document = <Document>doc.data(); // Just need the data on the server
+	const document = <Document>doc.data(); // Just need the data on the server
 	document._id = doc.id;
 	return document;
 }

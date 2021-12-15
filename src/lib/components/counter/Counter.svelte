@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function getCounterData(fetch, session) {
+	export async function getCounterData(fetch: LoadInput['fetch'], session: LoadInput['session']) {
 		if (session.user) {
 			const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
 			if (res.ok) {
@@ -19,12 +19,15 @@
 	import { Count } from '$lib/models/Count';
 	import { getDocumentStore, saveDocument } from '$lib/utils/firebase';
 	import { spring } from 'svelte/motion';
-	import { writable } from 'svelte/store';
+	import type { LoadInput } from '@sveltejs/kit';
 	export let counterData: Partial<Count>;
 
-	const count = getDocumentStore(Count, new Count(counterData));
-	const displayed_count = spring();
-	$: displayed_count.set($count.count);
+	const countStore = getDocumentStore(Count, new Count(counterData));
+	let count: Count;
+	$: count = $countStore || new Count({ count: 0 });
+
+	const displayed_count = spring<number>();
+	$: displayed_count.set(count.count);
 	$: offset = modulo($displayed_count, 1);
 
 	function modulo(n: number, m: number) {
@@ -33,14 +36,12 @@
 	}
 
 	function decrement() {
-		const doc = $count;
-		doc.count -= 1;
-		saveDocument(doc);
+		count.count -= 1;
+		saveDocument(count);
 	}
 	function increment() {
-		const doc = $count;
-		doc.count += 1;
-		saveDocument(doc);
+		count.count += 1;
+		saveDocument(count);
 	}
 </script>
 

@@ -7,7 +7,7 @@ import { FIREBASE_CLIENT_CONFIG } from '$lib/server/constants';
 
 export async function getSession(request: Request) {
 	const decodedToken: DecodedIdToken | null = request.locals.decodedToken;
-	let firebaseClientConfig = JSON.parse(FIREBASE_CLIENT_CONFIG);
+	const firebaseClientConfig = JSON.parse(FIREBASE_CLIENT_CONFIG);
 
 	if (decodedToken) {
 		const { uid, name, email } = decodedToken;
@@ -32,7 +32,10 @@ export const handle: Handle = async ({ request, resolve }) => {
 
 	// TODO https://github.com/sveltejs/kit/issues/1046
 	if (request.query.has('_method')) {
-		request.method = request.query.get('_method').toUpperCase();
+		const method = request.query.get('_method');
+		if (method) {
+			request.method = method.toUpperCase();
+		}
 	}
 
 	const response = await resolve(request);

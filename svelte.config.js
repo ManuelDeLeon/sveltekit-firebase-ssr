@@ -11,12 +11,7 @@ const config = {
 		adapter: adapter(),
 
 		// hydrate the <div id="svelte"> element in src/app.html
-		target: '#svelte',
-		vite: {
-			ssr: {
-				external: ['node-fetch']
-			}
-		}
+		target: '#svelte'
 	}
 };
 

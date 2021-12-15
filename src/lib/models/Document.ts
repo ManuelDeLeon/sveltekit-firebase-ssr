@@ -1,9 +1,11 @@
+import type { AnyObject } from '$lib/utils/types';
+
 export class Document {
-	constructor(data: Object = null) {
+	constructor(data: AnyObject = {}) {
 		this._load(data);
 	}
 
-	_load(data: Object) {
+	_load(data: AnyObject) {
 		if (data) {
 			Object.assign(this, data);
 		}

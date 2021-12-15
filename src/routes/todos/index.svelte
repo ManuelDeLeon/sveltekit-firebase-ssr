@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function load({ page, fetch, session, stuff }) {
+	export async function load({ fetch }: LoadInput) {
 		const res = await fetch(`/api/data?collectionPath=todos`);
 		if (res.ok) {
 			const todosData = await res.json();
@@ -21,8 +21,9 @@
 	import { Todo } from '$lib/models/Todo';
 	import { session } from '$app/stores';
 	import { deleteDocument, getCollectionStore, saveDocument } from '$lib/utils/firebase';
+	import type { LoadInput } from '@sveltejs/kit';
 
-	export let todosData: Array<any>;
+	export let todosData: Array<Partial<Todo>>;
 	let todos = getCollectionStore(
 		Todo,
 		'todos',
@@ -47,7 +48,9 @@
 
 	async function updateTodo(todo: Todo) {
 		saveDocument(todo);
-		(<any>document.activeElement).blur();
+		if (document.activeElement) {
+			(document.activeElement as HTMLElement).blur();
+		}
 	}
 
 	async function deleteTodo(todo: Todo) {

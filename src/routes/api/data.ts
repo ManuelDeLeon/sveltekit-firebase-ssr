@@ -13,6 +13,12 @@ export const get: RequestHandler = async (request) => {
 	const uid = decodedToken.uid;
 
 	const collectionPath = request.query.get('collectionPath');
+	if (!collectionPath) {
+		return {
+			status: 400
+		};
+	}
+
 	const docs = await getDocuments(collectionPath, uid);
 	if (!docs.length && request.query.get('createIfNone')) {
 		const doc = await createDocument(collectionPath, uid);
