@@ -21,7 +21,7 @@ export async function getSession(request: Request) {
 export const handle: Handle = async ({ request, resolve }) => {
 	const cookies = cookie.parse(request.headers.cookie || '');
 	request.locals.decodedToken = await decodeToken(cookies.token);
-	if (!request.locals.decodedToken && !publicPages.includes(request.path)) {
+	if (!request.locals.decodedToken && !publicPages.includes(request.url.pathname)) {
 		// If you are not logged in and you are not on a public page,
 		// it just redirects you to the main page, which is / in this case.
 		return {
@@ -31,8 +31,8 @@ export const handle: Handle = async ({ request, resolve }) => {
 	}
 
 	// TODO https://github.com/sveltejs/kit/issues/1046
-	if (request.query.has('_method')) {
-		const method = request.query.get('_method');
+	if (request.url.searchParams.has('_method')) {
+		const method = request.url.searchParams.get('_method');
 		if (method) {
 			request.method = method.toUpperCase();
 		}

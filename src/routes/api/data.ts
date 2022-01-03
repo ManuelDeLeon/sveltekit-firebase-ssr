@@ -12,7 +12,7 @@ export const get: RequestHandler = async (request) => {
 	}
 	const uid = decodedToken.uid;
 
-	const collectionPath = request.query.get('collectionPath');
+	const collectionPath = request.url.searchParams.get('collectionPath');
 	if (!collectionPath) {
 		return {
 			status: 400
@@ -20,7 +20,7 @@ export const get: RequestHandler = async (request) => {
 	}
 
 	const docs = await getDocuments(collectionPath, uid);
-	if (!docs.length && request.query.get('createIfNone')) {
+	if (!docs.length && request.url.searchParams.get('createIfNone')) {
 		const doc = await createDocument(collectionPath, uid);
 		docs.push(doc);
 	}
