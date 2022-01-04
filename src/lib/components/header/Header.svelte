@@ -15,14 +15,16 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			<li class:active={$page.path === '/'}><a sveltekit:prefetch href="/">Home</a></li>
-			<li class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">About</a></li>
+			<li class:active={$page.url.pathname === '/'}><a sveltekit:prefetch href="/">Home</a></li>
+			<li class:active={$page.url.pathname === '/about'}>
+				<a sveltekit:prefetch href="/about">About</a>
+			</li>
 
 			{#if $session.user}
-				<li class:active={$page.path === '/counter'}>
+				<li class:active={$page.url.pathname === '/counter'}>
 					<a sveltekit:prefetch href="/counter">Counter</a>
 				</li>
-				<li class:active={$page.path === '/todos'}>
+				<li class:active={$page.url.pathname === '/todos'}>
 					<a sveltekit:prefetch href="/todos">Todos</a>
 				</li>
 			{/if}

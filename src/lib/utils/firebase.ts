@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import type { FirebaseApp, FirebaseOptions } from 'firebase/app';
+import type { Firestore } from 'firebase/firestore';
 import {
 	collection,
 	getDocs,
@@ -10,8 +11,7 @@ import {
 	doc,
 	onSnapshot,
 	setDoc,
-	deleteDoc,
-	Firestore
+	deleteDoc
 } from 'firebase/firestore';
 import {
 	getAuth,
