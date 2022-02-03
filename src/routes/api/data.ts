@@ -2,8 +2,8 @@ import { createDocument, getDocuments, decodeToken } from '$lib/server/firebase'
 import type { RequestHandler } from '@sveltejs/kit';
 import cookie from 'cookie';
 
-export const get: RequestHandler = async (request) => {
-	const cookies = cookie.parse(request.headers.cookie || '');
+export const get: RequestHandler = async (event) => {
+	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 	const decodedToken = await decodeToken(cookies.token);
 	if (!decodedToken) {
 		return {
@@ -12,7 +12,7 @@ export const get: RequestHandler = async (request) => {
 	}
 	const uid = decodedToken.uid;
 
-	const collectionPath = request.url.searchParams.get('collectionPath');
+	const collectionPath = event.url.searchParams.get('collectionPath');
 	if (!collectionPath) {
 		return {
 			status: 400
@@ -20,7 +20,7 @@ export const get: RequestHandler = async (request) => {
 	}
 
 	const docs = await getDocuments(collectionPath, uid);
-	if (!docs.length && request.url.searchParams.get('createIfNone')) {
+	if (!docs.length && event.url.searchParams.get('createIfNone')) {
 		const doc = await createDocument(collectionPath, uid);
 		docs.push(doc);
 	}

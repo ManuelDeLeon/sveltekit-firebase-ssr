@@ -22,12 +22,13 @@
 	import { session } from '$app/stores';
 	import { deleteDocument, getCollectionStore, saveDocument } from '$lib/utils/firebase';
 	import type { LoadInput } from '@sveltejs/kit';
+	let thisSession: any = $session;
 
 	export let todosData: Array<Partial<Todo>>;
 	let todos = getCollectionStore(
 		Todo,
 		'todos',
-		$session.user.uid,
+		thisSession.user.uid,
 		todosData.map((t) => new Todo(t))
 	);
 
@@ -35,7 +36,7 @@
 
 	async function addTodo() {
 		const todo = new Todo();
-		todo.uid = (await $session).user.uid;
+		todo.uid = (await thisSession).user.uid;
 		todo.text = newTodoText;
 		saveDocument(todo);
 		newTodoText = '';

@@ -46,12 +46,13 @@ function listenForAuthChanges() {
 				const token = await user.getIdToken();
 				await setToken(token);
 				session.update((oldSession) => {
-					oldSession.user = {
+					const thisSession: any = oldSession;
+					thisSession.user = {
 						name: user.displayName,
 						email: user.email,
 						uid: user.uid
 					};
-					return oldSession;
+					return thisSession;
 				});
 			} else {
 				await setToken('');

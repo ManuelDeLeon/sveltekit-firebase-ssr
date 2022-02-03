@@ -14,6 +14,8 @@
 	import type { Count } from '$lib/models/Count';
 	import type { LoadInput } from '@sveltejs/kit';
 	export let counterData: Partial<Count>;
+	let thisSession: any;
+	$: thisSession = $session;
 </script>
 
 <svelte:head>
@@ -38,7 +40,7 @@
 		try editing <strong>src/routes/index.svelte</strong>
 	</h2>
 
-	{#if $session.user && counterData}
+	{#if thisSession.user && counterData}
 		<Counter {counterData} />
 	{/if}
 </section>

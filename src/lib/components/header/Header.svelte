@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page, session } from '$app/stores';
 	import logo from './svelte-logo.svg';
+	let thisSession: any;
+	$: thisSession = $session;
 </script>
 
 <header>
@@ -20,7 +22,7 @@
 				<a sveltekit:prefetch href="/about">About</a>
 			</li>
 
-			{#if $session.user}
+			{#if thisSession.user}
 				<li class:active={$page.url.pathname === '/counter'}>
 					<a sveltekit:prefetch href="/counter">Counter</a>
 				</li>
