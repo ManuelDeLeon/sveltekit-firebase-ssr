@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function getCounterData(fetch: LoadInput['fetch'], session: LoadInput['session']) {
+	export async function getCounterData(fetch: any, session: any) {
 		const thisSession: any = session;
 		if (thisSession.user) {
 			const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
@@ -20,7 +20,7 @@
 	import { Count } from '$lib/models/Count';
 	import { getDocumentStore, saveDocument } from '$lib/utils/firebase';
 	import { spring } from 'svelte/motion';
-	import type { LoadInput } from '@sveltejs/kit';
+
 	export let counterData: Partial<Count>;
 
 	const countStore = getDocumentStore(Count, new Count(counterData));

@@ -1,11 +1,11 @@
 import cookie from 'cookie';
-import type { Handle, RequestEvent } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import { decodeToken } from '$lib/server/firebase';
 import { publicPages } from '$lib/utils/constants';
 import { FIREBASE_CLIENT_CONFIG } from '$lib/server/constants';
 
-export async function getSession(event: RequestEvent) {
+export async function getSession(event: any) {
 	const locals: any = event.locals;
 	const decodedToken: DecodedIdToken | null = locals.decodedToken;
 	const firebaseClientConfig = JSON.parse(FIREBASE_CLIENT_CONFIG);

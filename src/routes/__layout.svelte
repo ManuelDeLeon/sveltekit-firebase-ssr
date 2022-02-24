@@ -2,7 +2,7 @@
 	import { publicPages } from '$lib/utils/constants';
 	import { initializeFirebase } from '$lib/utils/firebase';
 	import { browser } from '$app/env';
-	export async function load({ url, session }: LoadInput) {
+	export async function load({ url, session }: any) {
 		const thisSession: any = session;
 		if (browser) {
 			initializeFirebase(thisSession.firebaseClientConfig);
@@ -18,7 +18,6 @@
 <script lang="ts">
 	import Header from '$lib/components/header/Header.svelte';
 	import Auth from '$lib/components/auth/Auth.svelte';
-	import type { LoadInput } from '@sveltejs/kit';
 	import '../app.css';
 </script>
 

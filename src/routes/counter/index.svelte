@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function load({ fetch, session }: LoadInput) {
+	export async function load({ fetch, session }: any) {
 		return {
 			props: {
 				counterData: await getCounterData(fetch, session)
@@ -12,7 +12,6 @@
 	import { session } from '$app/stores';
 	import Counter, { getCounterData } from '$lib/components/counter/Counter.svelte';
 	import type { Count } from '$lib/models/Count';
-	import type { LoadInput } from '@sveltejs/kit';
 	export let counterData: Partial<Count>;
 	let thisSession: any;
 	$: thisSession = $session;
