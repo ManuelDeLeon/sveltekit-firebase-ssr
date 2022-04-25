@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
 	export async function getCounterData(fetch: any, session: any) {
-		const thisSession: any = session;
-		if (thisSession.user) {
+		if (session.user) {
 			const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
 			if (res.ok) {
 				const counterDataList = await res.json();

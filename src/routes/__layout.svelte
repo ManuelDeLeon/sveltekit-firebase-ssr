@@ -3,11 +3,10 @@
 	import { initializeFirebase } from '$lib/utils/firebase';
 	import { browser } from '$app/env';
 	export async function load({ url, session }: any) {
-		const thisSession: any = session;
 		if (browser) {
-			initializeFirebase(thisSession.firebaseClientConfig);
+			initializeFirebase(session.firebaseClientConfig);
 		}
-		if (!thisSession.user && !publicPages.includes(url.pathname)) {
+		if (!session.user && !publicPages.includes(url.pathname)) {
 			return { redirect: '/', status: 302 };
 		} else {
 			return {};
