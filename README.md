@@ -57,6 +57,25 @@ The (non-stringified) json has this shape:
 }
 ```
 
+To obtain the necessary server credentials, log in to the Firebase console, click the ⚙️(settings icon), then select `Project Settings` and then the `Service accounts` tab. In the `Firebase Admin SDK` click `Generate new private key`. The credentials should have the form:
+
+```
+{
+  "type": "XXXX",
+  "project_id": "XXXX",
+  "private_key_id": "XXXX",
+  "private_key": "XXXX",
+  "client_email": "XXXX",
+  "client_id": "XXXX",
+  "auth_uri": "XXXX",
+  "token_uri": "XXXX",
+  "auth_provider_x509_cert_url": "XXXX",
+  "client_x509_cert_url": "XXXX"
+}
+```
+
+These credentials contain a private key that should be kept secret (i.e. not shared or committed to Git)
+
 ## Authenticating the user
 
 `/src/routes/__layout.svelte` uses the `Auth` component which shows a button to sign in and out.
