@@ -1,9 +1,8 @@
-import { initializeApp } from 'firebase/app';
 import type { FirebaseApp, FirebaseOptions } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
 import {
 	collection,
-	getDocs,
 	getFirestore,
 	query,
 	where,
@@ -21,47 +20,10 @@ import {
 	onIdTokenChanged
 } from 'firebase/auth';
 import { session } from '$app/stores';
-import { browser } from '$app/env';
-import { readable } from 'svelte/store';
 import type { Document } from '$lib/models/Document';
-import type { AnyObject } from './types';
-
-export let app: FirebaseApp;
-export let db: Firestore;
-export function initializeFirebase(options: FirebaseOptions) {
-	if (!app) {
-		app = initializeApp(options);
-		db = getFirestore(app);
-		listenForAuthChanges();
-	}
-}
-
-function listenForAuthChanges() {
-	const auth = getAuth(app);
-
-	onIdTokenChanged(
-		auth,
-		async (user) => {
-			if (user) {
-				const token = await user.getIdToken();
-				await setToken(token);
-				session.update((oldSession) => {
-					const thisSession: any = oldSession;
-					thisSession.user = {
-						name: user.displayName,
-						email: user.email,
-						uid: user.uid
-					};
-					return thisSession;
-				});
-			} else {
-				await setToken('');
-				session.set({});
-			}
-		},
-		(err) => console.error(err.message)
-	);
-}
+import { readable } from 'svelte/store';
+import { browser } from '$app/env';
+import type { AnyObject } from 'AppModule';
 
 async function setToken(token: string) {
 	const options = {
@@ -75,43 +37,53 @@ async function setToken(token: string) {
 	await fetch('/api/token', options);
 }
 
-function providerFor(name: string) {
-	switch (name) {
-		case 'google':
-			return new GoogleAuthProvider();
-		default:
-			throw 'unknown provider ' + name;
+function listenForAuthChanges() {
+	const auth = getAuth(app);
+
+	onIdTokenChanged(
+		auth,
+		async (user) => {
+			if (user) {
+				const token = await user.getIdToken();
+				await setToken(token);
+				session.update((oldSession) => {
+					oldSession.user = {
+						name: user.displayName,
+						email: user.email,
+						uid: user.uid
+					};
+					return oldSession;
+				});
+			} else {
+				await setToken('');
+				session.update((oldSession) => {
+					oldSession.user = undefined;
+					return oldSession;
+				});
+			}
+		},
+		(err) => console.error(err.message)
+	);
+}
+
+export let app: FirebaseApp;
+export let db: Firestore;
+export function initializeFirebase(options: FirebaseOptions) {
+	if (!app) {
+		app = initializeApp(options);
+		db = getFirestore(app);
+		listenForAuthChanges();
 	}
 }
-export async function signInWith(name: string) {
-	const auth = getAuth(app);
-	const provider = providerFor(name);
-	await signInWithRedirect(auth, provider);
-}
 
-export async function signOut() {
-	const auth = getAuth(app);
-	await _signOut(auth);
-}
-
-export async function getDocuments<T extends Document>(
-	type: { new (data: AnyObject): T },
-	collectionPath: string,
-	uid: string
-): Promise<Array<T>> {
-	if (!uid) return [];
-
-	const db = getFirestore(app);
-	const q = query(collection(db, collectionPath), where('uid', '==', uid));
-	const querySnapshot = await getDocs(q);
-
-	const list: Array<T> = [];
-	querySnapshot.forEach((doc) => {
-		const document = new type(doc.data());
-		document._id = doc.id;
-		list.push(document);
-	});
-	return list;
+function getDbObject(document: Document): Partial<Document> {
+	const obj: AnyObject = {};
+	Object.keys(document)
+		.filter((k) => document._dbFields.includes(k))
+		.forEach((k) => {
+			obj[k] = document[k as keyof Document];
+		});
+	return obj;
 }
 
 export async function saveDocument(document: Document) {
@@ -124,22 +96,6 @@ export async function saveDocument(document: Document) {
 		const todoRef = await addDoc(collection(db, document._collection), dbObject);
 		document._id = todoRef.id;
 	}
-}
-
-export async function deleteDocument(document: Document) {
-	if (!document._collection) throw Error('Objects that extends Document must specify __collection');
-
-	await deleteDoc(doc(db, document._collection, document._id));
-}
-
-function getDbObject(document: Document): Partial<Document> {
-	const obj: AnyObject = {};
-	Object.keys(document)
-		.filter((k) => document._dbFields.includes(k))
-		.forEach((k) => {
-			obj[k] = document[k as keyof Document];
-		});
-	return obj;
 }
 
 export function getDocumentStore<T extends Document>(
@@ -173,6 +129,32 @@ export function getDocumentStore<T extends Document>(
 
 		return unsub;
 	});
+}
+
+function providerFor(name: string) {
+	switch (name) {
+		case 'google':
+			return new GoogleAuthProvider();
+		default:
+			throw 'unknown provider ' + name;
+	}
+}
+
+export async function signInWith(name: string) {
+	const auth = getAuth(app);
+	const provider = providerFor(name);
+	await signInWithRedirect(auth, provider);
+}
+
+export async function signOut() {
+	const auth = getAuth(app);
+	await _signOut(auth);
+}
+
+export async function deleteDocument(document: Document) {
+	if (!document._collection) throw Error('Objects that extends Document must specify __collection');
+
+	await deleteDoc(doc(db, document._collection, document._id));
 }
 
 export function getCollectionStore<T extends Document>(

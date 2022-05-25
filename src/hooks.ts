@@ -1,37 +1,36 @@
-import cookie from 'cookie';
-import type { GetSession, Handle } from '@sveltejs/kit';
-import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+import { v4 as uuid } from '@lukeed/uuid';
+import * as cookie from 'cookie';
+import { protectedPages } from '$lib/client/constants';
 import { decodeToken } from '$lib/server/firebase';
-import { publicPages } from '$lib/utils/constants';
+import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import { FIREBASE_CLIENT_CONFIG } from '$lib/server/constants';
+import type { GetSession, Handle } from '@sveltejs/kit';
 
 export const getSession: GetSession = async (event) => {
-	const locals: any = event.locals;
+	const locals = event.locals;
 	const decodedToken: DecodedIdToken | null = locals.decodedToken;
-	const firebaseClientConfig = JSON.parse(FIREBASE_CLIENT_CONFIG);
-
 	if (decodedToken) {
 		const { uid, name, email } = decodedToken;
-
-		return { user: { name, email, uid }, firebaseClientConfig };
+		return {
+			user: { name: name || null, email: email || null, uid },
+			firebaseClientConfig: FIREBASE_CLIENT_CONFIG
+		};
 	} else {
-		return { user: null, firebaseClientConfig };
+		return { user: undefined, firebaseClientConfig: FIREBASE_CLIENT_CONFIG };
 	}
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const locals: any = event.locals;
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
-	locals.decodedToken = await decodeToken(cookies.token);
-	if (!locals.decodedToken && !publicPages.includes(event.url.pathname)) {
-		// If you are not logged in and you are not on a public page,
-		// it just redirects you to the main page, which is / in this case.
-		event.request.headers.append('Location', '/');
-		event.request.headers.append('status', '302');
-		return await resolve(event);
-	}
-
+	event.locals.userid = cookies['userid'] || uuid();
+	event.locals.decodedToken = await decodeToken(cookies.token);
 	const response = await resolve(event);
+
+	if (!event.locals.decodedToken && protectedPages.has(event.url.pathname)) {
+		// Trying to access a protected page directly, send them to the 403
+		response.headers.set('Location', '/403');
+		response.headers.set('status', '302');
+	}
 
 	return response;
 };

@@ -1,4 +1,4 @@
-import type { AnyObject } from '$lib/utils/types';
+import type { AnyObject } from 'AppModule';
 
 export class Document {
 	constructor(data: AnyObject = {}) {

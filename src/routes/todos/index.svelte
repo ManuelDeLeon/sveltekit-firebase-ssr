@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
-	export async function load({ fetch }: any) {
+	import type { Load } from '@sveltejs/kit';
+	export const load: Load = async function load({ fetch }) {
 		const res = await fetch(`/api/data?collectionPath=todos`);
 		if (res.ok) {
 			const todosData = await res.json();
@@ -8,11 +9,8 @@
 			};
 		}
 
-		const { message } = await res.json();
-		return {
-			error: new Error(message)
-		};
-	}
+		throw await res.json();
+	};
 </script>
 
 <script lang="ts">
@@ -20,22 +18,25 @@
 	import { flip } from 'svelte/animate';
 	import { Todo } from '$lib/models/Todo';
 	import { session } from '$app/stores';
-	import { deleteDocument, getCollectionStore, saveDocument } from '$lib/utils/firebase';
-	let thisSession: any = $session;
+	import { deleteDocument, getCollectionStore, saveDocument } from '$lib/client/firebase';
 
 	export let todosData: Array<Partial<Todo>>;
+
+	if (!$session.user) throw 'Cannot access todos without a user.';
+
 	let todos = getCollectionStore(
 		Todo,
 		'todos',
-		thisSession.user.uid,
+		$session.user.uid,
 		todosData.map((t) => new Todo(t))
 	);
 
 	let newTodoText = '';
 
 	async function addTodo() {
+		if (!$session.user) throw 'Cannot add todo without a user.';
 		const todo = new Todo();
-		todo.uid = (await thisSession).user.uid;
+		todo.uid = $session.user.uid;
 		todo.text = newTodoText;
 		saveDocument(todo);
 		newTodoText = '';

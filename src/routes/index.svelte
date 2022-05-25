@@ -1,24 +1,25 @@
 <script context="module" lang="ts">
-	export async function load({ fetch, session }: any) {
+	import type { Load } from '@sveltejs/kit';
+	import { getCounterData } from '$lib/components/counter/Counter.svelte';
+	export const load: Load = async function load({ fetch, session }) {
 		return {
 			props: {
 				counterData: await getCounterData(fetch, session)
 			}
 		};
-	}
+	};
 </script>
 
 <script lang="ts">
+	import Counter from '$lib/components/counter/Counter.svelte';
 	import { session } from '$app/stores';
-	import Counter, { getCounterData } from '$lib/components/counter/Counter.svelte';
 	import type { Count } from '$lib/models/Count';
 	export let counterData: Partial<Count>;
-	let thisSession: any;
-	$: thisSession = $session;
 </script>
 
 <svelte:head>
 	<title>Home</title>
+	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
 <section>
@@ -30,16 +31,14 @@
 			</picture>
 		</div>
 
-		to your new<br />
-		SvelteKit + Firebase + SSR with user data<br />
-		Sign in to see the counter and todos pages
+		to your new<br />SvelteKit app
 	</h1>
 
 	<h2>
 		try editing <strong>src/routes/index.svelte</strong>
 	</h2>
 
-	{#if thisSession.user && counterData}
+	{#if $session.user && counterData}
 		<Counter {counterData} />
 	{/if}
 </section>

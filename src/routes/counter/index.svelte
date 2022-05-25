@@ -1,24 +1,24 @@
 <script context="module" lang="ts">
-	export async function load({ fetch, session }: any) {
+	import type { Load } from '@sveltejs/kit';
+	import { getCounterData } from '$lib/components/counter/Counter.svelte';
+	export const load: Load = async function load({ session, fetch }) {
 		return {
 			props: {
 				counterData: await getCounterData(fetch, session)
 			}
 		};
-	}
+	};
 </script>
 
 <script lang="ts">
 	import { session } from '$app/stores';
-	import Counter, { getCounterData } from '$lib/components/counter/Counter.svelte';
+	import Counter from '$lib/components/counter/Counter.svelte';
 	import type { Count } from '$lib/models/Count';
 	export let counterData: Partial<Count>;
-	let thisSession: any;
-	$: thisSession = $session;
 </script>
 
 <section>
-	{#if thisSession.user && counterData}
+	{#if $session.user && counterData}
 		<Counter {counterData} />
 	{/if}
 </section>

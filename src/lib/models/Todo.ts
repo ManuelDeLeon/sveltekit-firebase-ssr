@@ -1,4 +1,4 @@
-import type { AnyObject } from '$lib/utils/types';
+import type { AnyObject } from 'AppModule';
 import { Document } from './Document';
 export class Todo extends Document {
 	constructor(data: AnyObject = {}) {

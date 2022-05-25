@@ -1,17 +1,24 @@
 <script context="module" lang="ts">
-	import { publicPages } from '$lib/utils/constants';
-	import { initializeFirebase } from '$lib/utils/firebase';
+	import { protectedPages } from '$lib/client/constants';
+	import { initializeFirebase } from '$lib/client/firebase';
 	import { browser } from '$app/env';
-	export async function load({ url, session }: any) {
-		if (browser) {
-			initializeFirebase(session.firebaseClientConfig);
-		}
-		if (!session.user && !publicPages.includes(url.pathname)) {
+	import type { Load } from '@sveltejs/kit';
+	export const load: Load = async function load({ session, url }) {
+		console.log(url);
+		if (!session.user && protectedPages.has(url.pathname)) {
+			// User logged out. Send them home, not the 403 page
 			return { redirect: '/', status: 302 };
-		} else {
-			return {};
 		}
-	}
+		if (browser) {
+			try {
+				initializeFirebase(session.firebaseClientConfig);
+			} catch (ex) {
+				console.error(ex);
+			}
+		}
+
+		return {};
+	};
 </script>
 
 <script lang="ts">
@@ -24,7 +31,6 @@
 
 <main>
 	<Auth />
-
 	<slot />
 </main>
 
