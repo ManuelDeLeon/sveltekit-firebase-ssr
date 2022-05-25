@@ -4,7 +4,6 @@
 	import { browser } from '$app/env';
 	import type { Load } from '@sveltejs/kit';
 	export const load: Load = async function load({ session, url }) {
-		console.log(url);
 		if (!session.user && protectedPages.has(url.pathname)) {
 			// User logged out. Send them home, not the 403 page
 			return { redirect: '/', status: 302 };

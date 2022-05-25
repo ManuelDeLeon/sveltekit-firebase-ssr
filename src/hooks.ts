@@ -1,4 +1,3 @@
-import { v4 as uuid } from '@lukeed/uuid';
 import * as cookie from 'cookie';
 import { protectedPages } from '$lib/client/constants';
 import { decodeToken } from '$lib/server/firebase';
@@ -22,7 +21,6 @@ export const getSession: GetSession = async (event) => {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
-	event.locals.userid = cookies['userid'] || uuid();
 	event.locals.decodedToken = await decodeToken(cookies.token);
 	const response = await resolve(event);
 
