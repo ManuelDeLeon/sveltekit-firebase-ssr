@@ -37,6 +37,6 @@
 	"type": "module",
 	"dependencies": {
 		"@fontsource/fira-mono": "^4.5.8",
-		"firebase": "^9.8.1"
+		"firebase": "^9.8.2"
 	}
 }
