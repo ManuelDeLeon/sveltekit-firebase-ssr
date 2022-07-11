@@ -11,13 +11,9 @@ export let FIREBASE_CLIENT_CONFIG: FirebaseOptions = {};
 export let FIREBASE_SERVER_CONFIG: admin.ServiceAccount & { project_id?: string } = {};
 
 if (process && process.env && process.env['VITE_FIREBASE_CLIENT_CONFIG']) {
-	FIREBASE_CLIENT_CONFIG = JSON.parse(process.env['VITE_FIREBASE_CLIENT_CONFIG'] || '');
-	FIREBASE_SERVER_CONFIG = JSON.parse(process.env['VITE_FIREBASE_SERVER_CONFIG'] || '');
+	FIREBASE_CLIENT_CONFIG = JSON.parse(process.env['VITE_FIREBASE_CLIENT_CONFIG'] || '{}');
+	FIREBASE_SERVER_CONFIG = JSON.parse(process.env['VITE_FIREBASE_SERVER_CONFIG'] || '{}');
 } else {
-	FIREBASE_CLIENT_CONFIG = JSON.parse(
-		(import.meta.env.VITE_FIREBASE_CLIENT_CONFIG || '').toString()
-	);
-	FIREBASE_SERVER_CONFIG = JSON.parse(
-		(import.meta.env.VITE_FIREBASE_SERVER_CONFIG || '').toString()
-	);
+	FIREBASE_CLIENT_CONFIG = JSON.parse(import.meta.env.VITE_FIREBASE_CLIENT_CONFIG || '{}');
+	FIREBASE_SERVER_CONFIG = JSON.parse(import.meta.env.VITE_FIREBASE_SERVER_CONFIG || '{}');
 }
