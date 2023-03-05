@@ -27,8 +27,8 @@
 		try editing <strong>src/routes/+page.svelte</strong>
 	</h2>
 
-	{#if data.counterData}
-		<Counter counterData={data.counterData} />
+	{#if data.userCountData}
+		<Counter userCountData={data.userCountData} />
 	{/if}
 </section>
 

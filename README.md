@@ -34,6 +34,8 @@ The (non-stringified) json has this shape:
 }
 ```
 
+To obtain the client config, log in to the Firebase console, click the ⚙️ (settings icon), then select `Project Settings` and in the `General` tab the config json will be under `Your apps`.
+
 ### FIREBASE\_**SERVER**\_CONFIG
 
 This value is only used to retrieve data from Firebase on the server. See `src/lib/server/firebase.ts`
@@ -55,7 +57,7 @@ The (non-stringified) json has this shape:
 }
 ```
 
-To obtain the necessary server credentials, log in to the Firebase console, click the ⚙️(settings icon), then select `Project Settings` and then the `Service accounts` tab. In the `Firebase Admin SDK` click `Generate new private key`.
+To obtain the admin server config, log in to the Firebase console, click the ⚙️ (settings icon), then select `Project Settings` and then the `Service accounts` tab. In the `Firebase Admin SDK` click `Generate new private key`.
 
 These credentials contain a private key that should be kept secret (i.e. not shared or committed to Git)
 
@@ -64,7 +66,7 @@ These credentials contain a private key that should be kept secret (i.e. not sha
 `/src/routes/+layout.svelte` uses the `Auth` component which shows a button to sign in and out.
 The `signInWith` and `signOut` functions are in `/src/lib/utils/firebase.ts`.
 
-The script section of `/src/routes/__layout.svelte` invokes `listenForAuthChanges()` (`/src/lib/utils/firebase.ts`) if the app is running in the browser.
+The script section of `/src/routes/+layout.svelte` invokes `listenForAuthChanges()` (`/src/lib/utils/firebase.ts`) if the app is running in the browser.
 It will update the session data with the logged in user and set a cookie with its token.
 The `handle` function in `/src/hooks.server.ts` reads the cookie and decodes the token to include minimal information about the user in the session object.
 
@@ -80,7 +82,7 @@ Because reading on the server requires `firebase-admin` which uses a project's p
 
 At risk of angering the FP gods I decided to go with classes for the document models.
 `/src/lib/models/Document.ts` is the base class for Firebase documents. `_collection` is to be overridden with the path to the collection. `_dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
-`/src/lib/models/Counter.ts` holds the definition of the `Counter` item. The constructor adds the fields it wants to persist in the DB (text and done). It also overrides `_collection` with the name of the Firebase collection (`'todos'`).
+`/src/lib/models/Counter.ts` holds the definition of the `Counter` item. The constructor adds the fields it wants to persist in the DB (in this case it's just `count`). It also overrides `_collection` with the name of the Firebase collection (`'counters'`).
 
 ## Firebase reactivity
 
@@ -92,9 +94,8 @@ The `Counter` component doesn't display on the home page if the user isn't logge
 
 `Counter` uses the helper method `/src/lib/utils/firebase.ts -> getDocumentStore` to react to changes in a single document (there's one counters document in Firebase for each user).
 
-
 ## Loading user data.
 
-There's a bit of a run around when loading and SSR'ing a component which depends on user data. The component should expose a method that returns (to the parent page) the data it needs to render correctly. The parent calls this method as part of its load (before rendering) and then feeds the data back to the component as a prop.
+There's a bit of a run around when loading and SSR'ing a component which depends on user data. The component should expose a method that returns the data it needs to render correctly. The parent calls this method as part of its load (before rendering) and then feeds the data back to the component as a prop.
 
-For example, `Counter.svelte` has the method `getCounterData` which returns the data for the logged in user or null. `+page.svelte` declares `export let data: PageData;` which is populated via "magic" in the `load` method of `+page.ts` (it calls `getCounterData`). `+page.svelte` then checks if `data.counterData` has something and passes the value to the component `<Counter counterData={data.counterData} />`.
+For example, `Counter.svelte` has the method `getUserCountData` which returns the data for the logged in user. `+page.svelte` declares `export let data: PageData;` which is populated by the return of the `load` method in `+page.ts` (it calls `getUserCountData`). `+page.svelte` then checks if `data.userCountData` has something and passes the value to the component `<Counter userCountData={data.userCountData} />`.

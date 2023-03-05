@@ -1,17 +1,14 @@
 <script context="module" lang="ts">
-	export async function getCounterData(fetch: Fetch, session: UserSession | undefined) {
-		if (session) {
-			const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
-			if (res.ok) {
-				const counterDataList = await res.json();
-				return counterDataList[0];
-			}
-
-			const { message } = await res.json();
-			throw Error(message);
-		} else {
-			return null;
+	// Can't use native fetch because this will be called by the server during SSR
+	export async function getUserCountData(fetch: Fetch): Promise<Partial<UserSession>> {
+		const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
+		if (res.ok) {
+			const userCountDataArray = await res.json();
+			return userCountDataArray[0];
 		}
+
+		const { message } = await res.json();
+		throw Error(message);
 	}
 </script>
 
@@ -20,12 +17,11 @@
 	import { getDocumentStore, saveDocument } from '$lib/client/firebase';
 	import { spring } from 'svelte/motion';
 	import type { Fetch, UserSession } from '$lib/models/types';
-	export let counterData: Partial<Count>;
-	let count: Count;
+	export let userCountData: Partial<Count>;
 
-	const countStore = getDocumentStore(Count, new Count(counterData));
+	const countStore = getDocumentStore(Count, new Count(userCountData));
 
-	$: count = $countStore || new Count({ count: 0 });
+	$: count = $countStore;
 
 	const displayed_count = spring<number>();
 	$: displayed_count.set(count.count);

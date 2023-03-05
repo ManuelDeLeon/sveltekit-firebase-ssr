@@ -58,6 +58,9 @@ function listenForAuthChanges() {
 export let app: FirebaseApp;
 export let db: Firestore;
 export function initializeFirebase(options: FirebaseOptions) {
+	if (!browser) {
+		throw new Error("Can't use the Firebase client on the server.");
+	}
 	if (!app) {
 		app = initializeApp(options);
 		db = getFirestore(app);
@@ -89,9 +92,10 @@ export async function saveDocument(document: Document) {
 
 export function getDocumentStore<T extends Document>(
 	type: { new (data: AnyObject): T },
-	document: T
+	document: T,
+	onDeleted: () => void = () => undefined
 ) {
-	return readable<T | undefined>(document, (set) => {
+	return readable<T>(document, (set) => {
 		let dbUnsubscribe: () => void;
 		let unsubbed = false;
 		const unsub = () => {
@@ -109,7 +113,7 @@ export function getDocumentStore<T extends Document>(
 						newDoc._id = doc.id;
 						set(newDoc);
 					} else {
-						set(undefined);
+						onDeleted();
 						dbUnsubscribe();
 					}
 				});
