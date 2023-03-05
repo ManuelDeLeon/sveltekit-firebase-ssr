@@ -19,11 +19,11 @@ import {
 	GoogleAuthProvider,
 	onIdTokenChanged
 } from 'firebase/auth';
-import { session } from '$app/stores';
 import type { Document } from '$lib/models/Document';
 import { readable } from 'svelte/store';
-import { browser } from '$app/env';
-import type { AnyObject } from 'AppModule';
+import { browser } from '$app/environment';
+import type { AnyObject } from '$lib/models/types';
+import { invalidateAll } from '$app/navigation';
 
 async function setToken(token: string) {
 	const options = {
@@ -46,21 +46,10 @@ function listenForAuthChanges() {
 			if (user) {
 				const token = await user.getIdToken();
 				await setToken(token);
-				session.update((oldSession) => {
-					oldSession.user = {
-						name: user.displayName,
-						email: user.email,
-						uid: user.uid
-					};
-					return oldSession;
-				});
 			} else {
 				await setToken('');
-				session.update((oldSession) => {
-					oldSession.user = undefined;
-					return oldSession;
-				});
 			}
+			await invalidateAll();
 		},
 		(err) => console.error(err.message)
 	);
