@@ -99,3 +99,31 @@ The `Counter` component doesn't display on the home page if the user isn't logge
 There's a bit of a run around when loading and SSR'ing a component which depends on user data. The component should expose a method that returns the data it needs to render correctly. The parent calls this method as part of its load (before rendering) and then feeds the data back to the component as a prop.
 
 For example, `Counter.svelte` has the method `getUserCountData` which returns the data for the logged in user. `+page.svelte` declares `export let data: PageData;` which is populated by the return of the `load` method in `+page.ts` (it calls `getUserCountData`). `+page.svelte` then checks if `data.userCountData` has something and passes the value to the component `<Counter userCountData={data.userCountData} />`.
+
+## Update Firebase Cloud Firestore Rules
+
+You will need to update your Firestore security rules to grant the necessary permissions for your SvelteKit app. You can do this in the Firebase console by following these steps:
+
+1. Go to the Firebase Console.
+2. Select your project.
+3. In the left-hand menu, click on "Firestore Database."
+4. Click on the "Rules" tab.
+
+You'll now see the security rules for your Firestore database. You need to update these rules to allow read and/or write access for authenticated users, depending on your app requirements.
+
+Here's an example of security rules that allow read and write access to all documents in the database for authenticated users:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+
+These rules grant read and write permissions to any authenticated user. You may need to refine these rules further based on your app's specific requirements, such as allowing access only to specific collections or documents, or based on user roles.
+
+After updating your security rules, click "Publish" to apply the changes. 
