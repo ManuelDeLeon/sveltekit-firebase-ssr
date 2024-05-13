@@ -13,29 +13,29 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
-		"@fontsource/fira-mono": "^4.5.10",
-		"@neoconfetti/svelte": "^1.0.0",
-		"@playwright/test": "^1.31.2",
-		"@sveltejs/adapter-auto": "^2.0.0",
-		"@sveltejs/kit": "^1.10.0",
-		"@types/cookie": "^0.5.1",
-		"@typescript-eslint/eslint-plugin": "^5.54.0",
-		"@typescript-eslint/parser": "^5.54.0",
+		"@fontsource/fira-mono": "^5.0.13",
+		"@neoconfetti/svelte": "^2.2.1",
+		"@playwright/test": "^1.44.0",
+		"@sveltejs/adapter-auto": "^3.2.0",
+		"@sveltejs/kit": "^2.5.7",
+		"@types/cookie": "^0.6.0",
+		"@typescript-eslint/eslint-plugin": "^7.8.0",
+		"@typescript-eslint/parser": "^7.8.0",
 		"eslint": "^8.35.0",
-		"eslint-config-prettier": "^8.6.0",
+		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte3": "^4.0.0",
-		"prettier": "^2.8.4",
-		"prettier-plugin-svelte": "^2.9.0",
-		"svelte": "^3.55.1",
-		"svelte-check": "^3.0.4",
-		"tslib": "^2.5.0",
-		"typescript": "^4.9.5",
-		"vite": "^4.1.4",
-		"vitest": "^0.29.2"
+		"prettier": "^3.2.5",
+		"prettier-plugin-svelte": "^3.2.3",
+		"svelte": "^4.2.16",
+		"svelte-check": "^3.7.1",
+		"tslib": "^2.6.2",
+		"typescript": "^5.4.5",
+		"vite": "^5.2.11",
+		"vitest": "^1.6.0"
 	},
 	"type": "module",
 	"dependencies": {
-		"firebase": "^9.17.2",
-		"firebase-admin": "^11.5.0"
+		"firebase": "^10.11.1",
+		"firebase-admin": "^12.1.0"
 	}
 }
