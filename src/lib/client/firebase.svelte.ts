@@ -5,7 +5,6 @@ import {
 	collection,
 	getFirestore,
 	query,
-	where,
 	addDoc,
 	doc,
 	onSnapshot,
@@ -29,8 +28,7 @@ import type { Document } from '$lib/models/document';
 import { browser } from '$app/environment';
 import type { AnyObject } from '$lib/models/types';
 import { invalidateAll } from '$app/navigation';
-import { readable } from 'svelte/store';
-import firebase from 'firebase/compat/app';
+
 import {
 	PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,
 	PUBLIC_FIREBASE_AUTH_EMULATOR_PORT,
@@ -178,77 +176,6 @@ export async function deleteDocument(path: string, id: string) {
 	await deleteDoc(doc(db, path, id));
 }
 
-export function getDocumentStore<T extends Document>(
-	type: { new (data: AnyObject): T },
-	path: string,
-	id: string,
-	onDeleted: () => void = () => undefined
-) {
-	return readable<T | undefined>(undefined, (set) => {
-		let dbUnsubscribe: () => void;
-		let unsubbed = false;
-		const unsub = () => {
-			unsubbed = true;
-			if (dbUnsubscribe) {
-				dbUnsubscribe();
-			}
-		};
-		if (browser) {
-			(async () => {
-				if (unsubbed) return;
-				dbUnsubscribe = onSnapshot(doc(db, path, id), (docSnap) => {
-					if (docSnap.exists()) {
-						const newDoc = new type(docSnap.data());
-						newDoc._id = docSnap.id;
-						set(newDoc);
-					} else {
-						onDeleted();
-						dbUnsubscribe();
-					}
-				});
-			})();
-		}
-
-		return unsub;
-	});
-}
-
-export function getCollectionStore<T extends Document>(
-	type: { new (data: AnyObject): T },
-	path: string,
-	search: QueryFieldFilterConstraint | Array<QueryFieldFilterConstraint>,
-	initialData: Array<T> = []
-) {
-	return readable<Array<T>>(initialData, (set) => {
-		let dbUnsubscribe: () => void;
-		let unsubbed = false;
-		const unsub = () => {
-			unsubbed = true;
-			if (dbUnsubscribe) {
-				dbUnsubscribe();
-			}
-		};
-		if (browser) {
-			(async () => {
-				if (unsubbed) return;
-				const wheres = Array.isArray(search) ? search : [search];
-				const q = query(collection(db, path), ...wheres);
-				dbUnsubscribe = onSnapshot(q, (docs) => {
-					const newDocuments: Array<T> = [];
-					docs.forEach((docSnap) => {
-						const newDoc = new type(docSnap.data());
-						newDoc._id = docSnap.id;
-						newDocuments.push(newDoc);
-					});
-					set(newDocuments);
-				});
-			})();
-		}
-
-		return unsub;
-	});
-}
-
 export function useDocument<T extends Document>(
 	type: { new (data: AnyObject): T },
 	path: string,
@@ -270,7 +197,6 @@ export function useDocument<T extends Document>(
 			}
 		});
 		return () => {
-			console.log('dbUnsubscribe');
 			dbUnsubscribe();
 		};
 	});
@@ -278,6 +204,37 @@ export function useDocument<T extends Document>(
 	return {
 		get value() {
 			return obj;
+		}
+	};
+}
+
+export function useDocuments<T extends Document>(
+	type: { new (data: AnyObject): T },
+	path: string,
+	search: QueryFieldFilterConstraint | Array<QueryFieldFilterConstraint>,
+	initialData: Array<T> = []
+) {
+	let arr: Array<T> = $state(initialData);
+	$effect(() => {
+		const wheres = Array.isArray(search) ? search : [search];
+		const q = query(collection(db, path), ...wheres);
+		const dbUnsubscribe = onSnapshot(q, (docs) => {
+			const newDocuments: Array<T> = [];
+			docs.forEach((docSnap) => {
+				const newDoc = new type(docSnap.data());
+				newDoc._id = docSnap.id;
+				newDocuments.push(newDoc);
+			});
+			arr = newDocuments;
+		});
+		return () => {
+			dbUnsubscribe();
+		};
+	});
+
+	return {
+		get value() {
+			return arr;
 		}
 	};
 }
