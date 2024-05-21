@@ -1,14 +1,12 @@
-<script lang="ts">
+<script>
 	import Header from './Header.svelte';
-	import Auth from '$lib/components/auth/Auth.svelte';
-	import './styles.css';
 	import { browser } from '$app/environment';
-	import { initializeFirebase } from '$lib/client/firebase';
-	import { PUBLIC_FIREBASE_CLIENT_CONFIG } from '$env/static/public';
+	import { initializeFirebase } from '$lib/client/firebase.svelte';
+	import './styles.css';
 
 	if (browser) {
 		try {
-			initializeFirebase(JSON.parse(PUBLIC_FIREBASE_CLIENT_CONFIG));
+			initializeFirebase();
 		} catch (ex) {
 			console.error(ex);
 		}
@@ -19,7 +17,6 @@
 	<Header />
 
 	<main>
-		<Auth />
 		<slot />
 	</main>
 

@@ -11,8 +11,6 @@ export class Document {
 		}
 	}
 
-	_collection = '';
-	_dbFields = ['uid'];
+	_dbFields: Array<string> = [];
 	_id = '';
-	uid = '';
 }

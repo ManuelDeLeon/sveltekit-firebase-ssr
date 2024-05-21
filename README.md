@@ -2,6 +2,13 @@
 
 This is an example/boilerplate/starter of the SvelteKit sample app with Firebase authentication and SSR that has user data.
 
+## Features
+
+- SSR is generated with user data
+- Works with Firebase Emulator
+- Svelte 5 runes
+- Data is reactive
+
 ## Live example
 
 https://sveltekit-firebase-ssr.vercel.app/
@@ -13,6 +20,13 @@ Create a `.env` file at the root of the folder with the following entries:
 ```
 PUBLIC_FIREBASE_CLIENT_CONFIG=Your **client** Firebase config json, stringified
 FIREBASE_SERVER_CONFIG=Your **server** Firebase config json, stringified
+
+PUBLIC_USE_FIREBASE_EMULATOR=true|false
+PUBLIC_FIREBASE_EMULATOR_PROJECT=your-project-name
+PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost
+PUBLIC_FIREBASE_AUTH_EMULATOR_PORT=9099
+PUBLIC_FIRESTORE_EMULATOR_HOST=localhost
+PUBLIC_FIRESTORE_EMULATOR_PORT=8080
 ```
 
 ### PUBLIC_FIREBASE\_**CLIENT**\_CONFIG
@@ -61,15 +75,6 @@ To obtain the admin server config, log in to the Firebase console, click the ⚙
 
 These credentials contain a private key that should be kept secret (i.e. not shared or committed to Git)
 
-## Authenticating the user
-
-`/src/routes/+layout.svelte` uses the `Auth` component which shows a button to sign in and out.
-The `signInWith` and `signOut` functions are in `/src/lib/utils/firebase.ts`.
-
-The script section of `/src/routes/+layout.svelte` invokes `listenForAuthChanges()` (`/src/lib/utils/firebase.ts`) if the app is running in the browser.
-It will update the session data with the logged in user and set a cookie with its token.
-The `handle` function in `/src/hooks.server.ts` reads the cookie and decodes the token to include minimal information about the user in the session object.
-
 ## Reading data
 
 Because reading on the server requires `firebase-admin` which uses a project's private key, DB operations are separated into the following:
@@ -81,24 +86,22 @@ Because reading on the server requires `firebase-admin` which uses a project's p
 ## Models
 
 At risk of angering the FP gods I decided to go with classes for the document models.
-`/src/lib/models/Document.ts` is the base class for Firebase documents. `_collection` is to be overridden with the path to the collection. `_dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
-`/src/lib/models/Counter.ts` holds the definition of the `Counter` item. The constructor adds the fields it wants to persist in the DB (in this case it's just `count`). It also overrides `_collection` with the name of the Firebase collection (`'counters'`).
+`/src/lib/models/Document.ts` is the base class for Firebase documents. `_dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
+`/src/lib/models/Counter.ts` holds the definition of the `Counter` item. The constructor adds the fields it wants to persist in the DB (in this case it's `count` and `uid`).
 
 ## Firebase reactivity
 
-The `Counter` component shows how one can subscribe to Firebase changes. It gets the data from the server, creates a `Document`, and uses the `.getStore()` function which creates a readable store that A) loads the object's data properties on Firebase's `onSnapshot`, and B) updates the store via the `set` method.
+The `Counter` component shows how one can subscribe to Firebase changes. `useDocument` gets the data from the server, creates a `Document` and loads the object's data properties on Firebase's `onSnapshot`.
 
 You can open 2 browser windows and see how one changes with the other (as long as they're both logged in with the same user).
 
 The `Counter` component doesn't display on the home page if the user isn't logged in.
 
-`Counter` uses the helper method `/src/lib/utils/firebase.ts -> getDocumentStore` to react to changes in a single document (there's one counters document in Firebase for each user).
-
 ## Loading user data.
 
 There's a bit of a run around when loading and SSR'ing a component which depends on user data. The component should expose a method that returns the data it needs to render correctly. The parent calls this method as part of its load (before rendering) and then feeds the data back to the component as a prop.
 
-For example, `Counter.svelte` has the method `getUserCountData` which returns the data for the logged in user. `+page.svelte` declares `export let data: PageData;` which is populated by the return of the `load` method in `+page.ts` (it calls `getUserCountData`). `+page.svelte` then checks if `data.userCountData` has something and passes the value to the component `<Counter userCountData={data.userCountData} />`.
+For example, `Counter.svelte` has the method `getUserCountData` which returns the data for the logged in user. `+page.svelte` declares `let { data } = $props();` which is populated by the return of the `load` method in `+page.server.ts` (it calls `getUserCountData`). `+page.svelte` then checks if `data.userCount` has something and passes the value to the component `<Counter userCount={data.userCount} />`.
 
 ## Update Firebase Cloud Firestore Rules
 
@@ -126,4 +129,4 @@ service cloud.firestore {
 
 These rules grant read and write permissions to any authenticated user. You may need to refine these rules further based on your app's specific requirements, such as allowing access only to specific collections or documents, or based on user roles.
 
-After updating your security rules, click "Publish" to apply the changes. 
+After updating your security rules, click "Publish" to apply the changes.

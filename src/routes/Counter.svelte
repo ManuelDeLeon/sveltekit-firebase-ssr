@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	// Can't use native fetch because this will be called by the server during SSR
-	export async function getUserCountData(fetch: Fetch): Promise<Partial<UserSession>> {
+	export async function getUserCountData(fetch: Fetch): Promise<Count> {
 		const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
 		if (res.ok) {
 			const userCountDataArray = await res.json();
@@ -13,50 +13,44 @@
 </script>
 
 <script lang="ts">
-	import { Count } from '$lib/models/Count';
-	import { getDocumentStore, saveDocument } from '$lib/client/firebase';
-	import { spring } from 'svelte/motion';
-	import type { Fetch, UserSession } from '$lib/models/types';
-	export let userCountData: Partial<Count>;
+	import { saveDocument, useDocument } from '$lib/client/firebase.svelte';
+	import { Count } from '$lib/models/count';
+	import type { Fetch } from '$lib/models/types';
 
-	const countStore = getDocumentStore(Count, new Count(userCountData));
+	let {
+		userCount
+	}: {
+		userCount: Count;
+	} = $props();
 
-	$: count = $countStore;
-
-	const displayed_count = spring<number>();
-	$: displayed_count.set(count.count);
-	$: offset = modulo($displayed_count, 1);
-
-	function modulo(n: number, m: number) {
-		// handle negative numbers
-		return ((n % m) + m) % m;
-	}
+	let countDoc = useDocument(Count, 'counters', userCount._id, userCount);
 
 	function decrement() {
-		count.count -= 1;
-		saveDocument(count);
+		if (!countDoc.value) return;
+		countDoc.value.count -= 1;
+		saveDocument('counters', countDoc.value);
 	}
 	function increment() {
-		count.count += 1;
-		saveDocument(count);
+		if (!countDoc.value) return;
+		countDoc.value.count += 1;
+		saveDocument('counters', countDoc.value);
 	}
 </script>
 
 <div class="counter">
-	<button on:click={decrement} aria-label="Decrease the counter by one">
+	<button onclick={decrement} aria-label="Decrease the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5" />
 		</svg>
 	</button>
 
 	<div class="counter-viewport">
-		<div class="counter-digits" style="transform: translate(0, {100 * offset}%)">
-			<strong class="hidden" aria-hidden="true">{Math.floor($displayed_count + 1)}</strong>
-			<strong>{Math.floor($displayed_count)}</strong>
+		<div class="counter-digits">
+			<strong>{Math.floor(countDoc.value?.count || 0)}</strong>
 		</div>
 	</div>
 
-	<button on:click={increment} aria-label="Increase the counter by one">
+	<button onclick={increment} aria-label="Increase the counter by one">
 		<svg aria-hidden="true" viewBox="0 0 1 1">
 			<path d="M0,0.5 L1,0.5 M0.5,0 L0.5,1" />
 		</svg>
@@ -122,10 +116,5 @@
 		position: absolute;
 		width: 100%;
 		height: 100%;
-	}
-
-	.hidden {
-		top: -100%;
-		user-select: none;
 	}
 </style>

@@ -2,8 +2,23 @@
 	import Counter from './Counter.svelte';
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
-	import type { PageData } from './$types';
-	export let data: PageData;
+	import {
+		signInWithEmailAndPassword,
+		signInWithGoogle,
+		signOut
+	} from '$lib/client/firebase.svelte';
+
+	let { data } = $props();
+
+	let email = $state('');
+	let password = $state('');
+
+	async function signInEmailAndPassword() {
+		await signInWithEmailAndPassword(email, password);
+	}
+	async function signInGoogle() {
+		await signInWithGoogle();
+	}
 </script>
 
 <svelte:head>
@@ -27,8 +42,27 @@
 		try editing <strong>src/routes/+page.svelte</strong>
 	</h2>
 
-	{#if data.userCountData}
-		<Counter userCountData={data.userCountData} />
+	{#if data.userInfo && data.userCount}
+		<div style="display: flex; flex-direction: column; gap: 0.5rem">
+			({data.userInfo.email})
+			<button onclick={() => signOut()}>Sign Out</button>
+		</div>
+
+		<Counter userCount={data.userCount} />
+	{:else}
+		<div style="display: flex; flex-direction: column; gap: 0.5rem">
+			<input class="border border-slate-800 rounded-lg px-3 py-1" type="email" bind:value={email} />
+			<input
+				class="border border-slate-800 rounded-lg px-3 py-1"
+				type="password"
+				bind:value={password}
+			/>
+			<button class="button-main" onclick={signInEmailAndPassword}
+				>Sign In with Email/Password</button
+			>
+			<hr />
+			<button class="button-main" onclick={signInGoogle}>Sign In with Google</button>
+		</div>
 	{/if}
 </section>
 

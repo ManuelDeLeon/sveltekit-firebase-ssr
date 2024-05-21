@@ -1,15 +1,30 @@
 import { FIREBASE_SERVER_CONFIG } from '$env/static/private';
-import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import admin from 'firebase-admin';
-import type { Document } from '$lib/models/Document';
+import type { Document } from '$lib/models/document';
+import {
+	PUBLIC_USE_FIREBASE_EMULATOR,
+	PUBLIC_FIREBASE_EMULATOR_PROJECT,
+	PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,
+	PUBLIC_FIRESTORE_EMULATOR_HOST,
+	PUBLIC_FIRESTORE_EMULATOR_PORT,
+	PUBLIC_FIREBASE_AUTH_EMULATOR_PORT
+} from '$env/static/public';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 
 function initializeFirebase() {
 	if (!admin.apps.length) {
-		const serviceAccount = JSON.parse(FIREBASE_SERVER_CONFIG);
-		admin.initializeApp({
-			credential: admin.credential.cert(serviceAccount),
-			databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
-		});
+		if (PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+			process.env.FIREBASE_AUTH_EMULATOR_HOST = `${PUBLIC_FIREBASE_AUTH_EMULATOR_HOST}:${PUBLIC_FIREBASE_AUTH_EMULATOR_PORT}`;
+			process.env.GCLOUD_PROJECT = PUBLIC_FIREBASE_EMULATOR_PROJECT;
+			process.env.FIRESTORE_EMULATOR_HOST = `${PUBLIC_FIRESTORE_EMULATOR_HOST}:${PUBLIC_FIRESTORE_EMULATOR_PORT}`;
+			admin.initializeApp();
+		} else {
+			const serviceAccount = JSON.parse(FIREBASE_SERVER_CONFIG);
+			admin.initializeApp({
+				credential: admin.credential.cert(serviceAccount),
+				databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
+			});
+		}
 	}
 }
 
@@ -19,25 +34,31 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 		initializeFirebase();
 		return await admin.auth().verifyIdToken(token);
 	} catch (err) {
+		console.error(err);
 		return null;
 	}
 }
 
-export async function getDocuments(collectionPath: string, uid: string): Promise<Array<Document>> {
-	if (!uid) return [];
+export async function getUserDocuments<T extends Document>(
+	collectionPath: string,
+	uid: string
+): Promise<Array<T>> {
 	initializeFirebase();
 	const db = admin.firestore();
 	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
-	const list: Array<Document> = [];
+	const list: Array<T> = [];
 	querySnapshot.forEach((doc) => {
-		const document: Document = <Document>doc.data(); // Just need the data on the server
+		const document: T = <T>doc.data(); // Just need the data on the server
 		document._id = doc.id;
 		list.push(document);
 	});
 	return list;
 }
 
-export async function createDocument(collectionPath: string, uid: string): Promise<Document> {
+export async function createUserDocument<T extends Document>(
+	collectionPath: string,
+	uid: string
+): Promise<Document> {
 	initializeFirebase();
 	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();

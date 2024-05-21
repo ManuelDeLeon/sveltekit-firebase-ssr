@@ -1,13 +1,12 @@
 import type { AnyObject } from '$lib/models/types';
-import { Document } from './Document';
+import { Document } from './document';
 
 export class Count extends Document {
 	constructor(data: AnyObject = {}) {
 		super(data);
 		this._load(data);
-		this._dbFields.push('count');
+		this._dbFields.push('count', 'uid');
 	}
-
-	_collection = 'counters';
 	count = 0;
+	uid = '';
 }
