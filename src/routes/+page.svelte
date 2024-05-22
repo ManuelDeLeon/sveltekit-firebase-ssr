@@ -7,8 +7,17 @@
 		signInWithGoogle,
 		signOut
 	} from '$lib/client/firebase.svelte';
+	import { useUser } from '$lib/client/state.svelte';
 
+	// Get the user info and count data from the server (+page.server.ts)
 	let { data } = $props();
+	const dataUser = data.userInfo
+		? { uid: data.userInfo.uid, email: data.userInfo.email || null }
+		: null;
+
+	// Set the value of the shared user variable
+	// Counter.svelte will pick up this shared value
+	const user = useUser(dataUser);
 
 	let email = $state('');
 	let password = $state('');
@@ -38,13 +47,12 @@
 		to your new<br />SvelteKit app
 	</h1>
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	{#if data.userInfo && data.userCount}
+	{#if user.value && data.userCount}
 		<div style="display: flex; flex-direction: column; gap: 0.5rem">
-			({data.userInfo.email})
+			<div>
+				User data on +page.svelte: ({user.value.email})
+			</div>
+
 			<button onclick={() => signOut()}>Sign Out</button>
 		</div>
 

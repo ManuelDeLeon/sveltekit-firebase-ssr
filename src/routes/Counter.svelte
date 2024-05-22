@@ -14,15 +14,23 @@
 
 <script lang="ts">
 	import { saveDocument, useDocument } from '$lib/client/firebase.svelte';
+	import { useUser } from '$lib/client/state.svelte';
 	import { Count } from '$lib/models/count';
 	import type { Fetch } from '$lib/models/types';
 
+	// Components can get data from a shared variable
+	// This one is set on +page.svelte
+	const user = useUser();
+
+	// Components can also get data from a prop passed by the parent
 	let {
 		userCount
 	}: {
 		userCount: Count;
 	} = $props();
 
+	// Get a reactive/rune variable initialized to the prop passed by the parent
+	// This one is set on +page.svelte
 	let countDoc = useDocument(Count, 'counters', userCount._id, userCount);
 
 	function decrement() {
@@ -56,6 +64,14 @@
 		</svg>
 	</button>
 </div>
+
+{#if user.value}
+	<div style="display: flex; flex-direction: column; gap: 0.5rem">
+		<div>
+			User data on Counter.svelte: ({user.value.email})
+		</div>
+	</div>
+{/if}
 
 <style>
 	.counter {

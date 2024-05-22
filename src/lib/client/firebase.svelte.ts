@@ -38,6 +38,9 @@ import {
 	PUBLIC_FIRESTORE_EMULATOR_HOST,
 	PUBLIC_FIRESTORE_EMULATOR_PORT
 } from '$env/static/public';
+import { useUser } from './state.svelte';
+
+const user = useUser();
 
 async function setToken(token: string) {
 	const options = {
@@ -56,12 +59,14 @@ function listenForAuthChanges() {
 
 	onIdTokenChanged(
 		auth,
-		async (user) => {
-			if (user) {
-				const token = await user.getIdToken();
+		async (newUser) => {
+			if (newUser) {
+				const token = await newUser.getIdToken();
 				await setToken(token);
+				user.value = { email: newUser.email, uid: newUser.uid };
 			} else {
 				await setToken('');
+				user.value = null;
 			}
 			await invalidateAll();
 		},
