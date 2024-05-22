@@ -15,7 +15,7 @@
 <script lang="ts">
 	import { saveDocument, useDocument } from '$lib/client/firebase.svelte';
 	import { useUser } from '$lib/client/state.svelte';
-	import { Count } from '$lib/models/count';
+	import { Count } from '$lib/models/Count';
 	import type { Fetch } from '$lib/models/types';
 
 	// Components can get data from a shared variable

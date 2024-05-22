@@ -1,4 +1,4 @@
-import type { Count } from '$lib/models/count';
+import type { Count } from '$lib/models/Count';
 import { decodeToken } from '$lib/server/firebase.js';
 import { getUserCountData } from './Counter.svelte';
 
