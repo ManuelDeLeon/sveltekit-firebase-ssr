@@ -8,6 +8,7 @@
 		signOut
 	} from '$lib/client/firebase.svelte';
 	import { useUser } from '$lib/client/state.svelte';
+	import { PUBLIC_USE_FIREBASE_EMULATOR } from '$env/static/public';
 
 	// Get the user info and count data from the server (+page.server.ts)
 	let { data } = $props();
@@ -59,21 +60,23 @@
 		<Counter userCount={data.userCount} />
 	{:else}
 		<div style="display: flex; flex-direction: column; gap: 0.5rem">
-			<input
-				class="border border-slate-800 rounded-lg px-3 py-1"
-				type="email"
-				placeholder="Email..."
-				bind:value={email}
-			/>
-			<input
-				class="border border-slate-800 rounded-lg px-3 py-1"
-				type="password"
-				placeholder="Password..."
-				bind:value={password}
-			/>
-			<button class="button-main" onclick={signInEmailAndPassword}
-				>Sign In with Email/Password</button
-			>
+			{#if PUBLIC_USE_FIREBASE_EMULATOR === 'true'}
+				<input
+					class="border border-slate-800 rounded-lg px-3 py-1"
+					type="email"
+					placeholder="Email..."
+					bind:value={email}
+				/>
+				<input
+					class="border border-slate-800 rounded-lg px-3 py-1"
+					type="password"
+					placeholder="Password..."
+					bind:value={password}
+				/>
+				<button class="button-main" onclick={signInEmailAndPassword}
+					>Sign In with Email/Password</button
+				>
+			{/if}
 			<hr />
 			<button class="button-main" onclick={signInGoogle}>Sign In with Google</button>
 		</div>
