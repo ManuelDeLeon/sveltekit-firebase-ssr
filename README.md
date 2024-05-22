@@ -129,4 +129,4 @@ service cloud.firestore {
 
 These rules grant read and write permissions to any authenticated user. You may need to refine these rules further based on your app's specific requirements, such as allowing access only to specific collections or documents, or based on user roles.
 
-After updating your security rules, click "Publish" to apply the changes.
+After updating your security rules, click "Publish" to apply the changes..
