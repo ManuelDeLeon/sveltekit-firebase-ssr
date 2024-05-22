@@ -59,10 +59,16 @@
 		<Counter userCount={data.userCount} />
 	{:else}
 		<div style="display: flex; flex-direction: column; gap: 0.5rem">
-			<input class="border border-slate-800 rounded-lg px-3 py-1" type="email" bind:value={email} />
+			<input
+				class="border border-slate-800 rounded-lg px-3 py-1"
+				type="email"
+				placeholder="Email..."
+				bind:value={email}
+			/>
 			<input
 				class="border border-slate-800 rounded-lg px-3 py-1"
 				type="password"
+				placeholder="Password..."
 				bind:value={password}
 			/>
 			<button class="button-main" onclick={signInEmailAndPassword}
