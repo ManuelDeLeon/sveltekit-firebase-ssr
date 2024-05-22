@@ -12,7 +12,7 @@ export async function load({ cookies, fetch }): Promise<LoadResult> {
 	const decodedToken = await decodeToken(token);
 	if (decodedToken) {
 		const { uid, email } = decodedToken;
-		let userCount = await getUserCountData(fetch);
+		const userCount = await getUserCountData(fetch);
 
 		return { userInfo: { uid, email }, userCount };
 	}

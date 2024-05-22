@@ -55,10 +55,7 @@ export async function getUserDocuments<T extends Document>(
 	return list;
 }
 
-export async function createUserDocument<T extends Document>(
-	collectionPath: string,
-	uid: string
-): Promise<Document> {
+export async function createUserDocument(collectionPath: string, uid: string): Promise<Document> {
 	initializeFirebase();
 	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();

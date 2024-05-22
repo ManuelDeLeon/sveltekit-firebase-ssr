@@ -1,4 +1,4 @@
-import type { FirebaseApp, FirebaseOptions } from 'firebase/app';
+import type { FirebaseApp } from 'firebase/app';
 import type { Firestore, QueryFieldFilterConstraint } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import {

@@ -1,7 +1,6 @@
 import { createUserDocument, getUserDocuments, decodeToken } from '$lib/server/firebase';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { Count } from '$lib/models/count';
 
 export const GET: RequestHandler = async ({ cookies, url }) => {
 	const decodedToken = await decodeToken(cookies.get('token') || '');
