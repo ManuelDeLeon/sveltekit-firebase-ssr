@@ -1,5 +1,5 @@
 import type { AnyObject } from '$lib/models/types';
-import { Document } from './document';
+import { Document } from './Document';
 
 export class Count extends Document {
 	constructor(data: AnyObject = {}) {

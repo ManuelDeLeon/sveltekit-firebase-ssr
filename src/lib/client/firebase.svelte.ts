@@ -23,7 +23,7 @@ import {
 	connectAuthEmulator,
 	signInWithEmailAndPassword as _signInWithEmailAndPassword
 } from 'firebase/auth';
-import type { Document } from '$lib/models/document';
+import type { Document } from '$lib/models/Document';
 
 import { browser } from '$app/environment';
 import type { AnyObject } from '$lib/models/types';

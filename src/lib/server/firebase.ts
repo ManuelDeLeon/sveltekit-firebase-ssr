@@ -1,6 +1,6 @@
 import { FIREBASE_SERVER_CONFIG } from '$env/static/private';
 import admin from 'firebase-admin';
-import type { Document } from '$lib/models/document';
+import type { Document } from '$lib/models/Document';
 import {
 	PUBLIC_USE_FIREBASE_EMULATOR,
 	PUBLIC_FIREBASE_EMULATOR_PROJECT,
