@@ -23,10 +23,8 @@ import {
 	connectAuthEmulator,
 	signInWithEmailAndPassword as _signInWithEmailAndPassword
 } from 'firebase/auth';
-import type { Document } from '$lib/models/Document';
 
 import { browser } from '$app/environment';
-import type { AnyObject } from '$lib/models/types';
 import { invalidateAll } from '$app/navigation';
 
 import {
@@ -39,6 +37,8 @@ import {
 	PUBLIC_FIRESTORE_EMULATOR_PORT
 } from '$env/static/public';
 import { useUser } from './state.svelte';
+import type { Doc } from '$lib/models/doc';
+import { getDbObject } from '$lib/misc/functions';
 
 const user = useUser();
 
@@ -126,18 +126,8 @@ export async function signOut() {
 	await _signOut(auth);
 }
 
-function getDbObject<T extends Document>(document: T): Partial<Document> {
-	const obj: AnyObject = {};
-	Object.keys(document)
-		.filter((k) => document._dbFields.includes(k))
-		.forEach((k) => {
-			obj[k] = document[k as keyof Document];
-		});
-	return obj;
-}
-
-export async function saveDocument<T extends Document>(path: string, document: T) {
-	const dbObject = getDbObject(document);
+export async function saveDocument<T extends Doc>(type: { new (): T }, path: string, document: T) {
+	const dbObject = getDbObject(type, document);
 
 	if (document._id) {
 		await setDoc(doc(db, path, document._id), dbObject);
@@ -147,14 +137,15 @@ export async function saveDocument<T extends Document>(path: string, document: T
 	}
 }
 
-export async function getDocument<T extends Document>(
-	type: { new (data: AnyObject): T },
+export async function getDocument<T extends Doc>(
+	type: { new (): T },
 	path: string,
 	id: string
 ): Promise<T | null> {
 	const docSnap = await getDoc(doc(db, path, id));
 	if (docSnap.exists()) {
-		const ret = new type(docSnap.data());
+		const ret = new type();
+		ret._load(docSnap.data());
 		ret._id = docSnap.id;
 		return ret;
 	} else {
@@ -162,8 +153,8 @@ export async function getDocument<T extends Document>(
 	}
 }
 
-export async function getDocuments<T extends Document>(
-	type: { new (data: AnyObject): T },
+export async function getDocuments<T extends Doc>(
+	type: { new (): T },
 	path: string,
 	search: QueryFieldFilterConstraint | Array<QueryFieldFilterConstraint>
 ): Promise<Array<T>> {
@@ -171,7 +162,8 @@ export async function getDocuments<T extends Document>(
 	const q = query(collection(db, path), ...wheres);
 	const docSnap = await getDocs(q);
 	return docSnap.docs.map((d) => {
-		const ret = new type(d.data());
+		const ret = new type();
+		ret._load(d.data());
 		ret._id = d.id;
 		return ret;
 	});
@@ -181,8 +173,8 @@ export async function deleteDocument(path: string, id: string) {
 	await deleteDoc(doc(db, path, id));
 }
 
-export function useDocument<T extends Document>(
-	type: { new (data: AnyObject): T },
+export function useDocument<T extends Doc>(
+	type: { new (): T },
 	path: string,
 	id: string,
 	defaultValue: T | undefined = undefined,
@@ -192,7 +184,8 @@ export function useDocument<T extends Document>(
 	$effect(() => {
 		const dbUnsubscribe = onSnapshot(doc(db, path, id), (docSnap) => {
 			if (docSnap.exists()) {
-				const newDoc = new type(docSnap.data());
+				const newDoc = new type();
+				newDoc._load(docSnap.data());
 				newDoc._id = docSnap.id;
 				obj = newDoc;
 			} else {
@@ -213,8 +206,8 @@ export function useDocument<T extends Document>(
 	};
 }
 
-export function useDocuments<T extends Document>(
-	type: { new (data: AnyObject): T },
+export function useDocuments<T extends Doc>(
+	type: { new (): T },
 	path: string,
 	search: QueryFieldFilterConstraint | Array<QueryFieldFilterConstraint>,
 	initialData: Array<T> = []
@@ -226,7 +219,8 @@ export function useDocuments<T extends Document>(
 		const dbUnsubscribe = onSnapshot(q, (docs) => {
 			const newDocuments: Array<T> = [];
 			docs.forEach((docSnap) => {
-				const newDoc = new type(docSnap.data());
+				const newDoc = new type();
+				newDoc._load(docSnap.data());
 				newDoc._id = docSnap.id;
 				newDocuments.push(newDoc);
 			});

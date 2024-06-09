@@ -15,7 +15,7 @@
 <script lang="ts">
 	import { saveDocument, useDocument } from '$lib/client/firebase.svelte';
 	import { useUser } from '$lib/client/state.svelte';
-	import { Count } from '$lib/models/Count';
+	import { Count } from '$lib/models/count';
 	import type { Fetch } from '$lib/models/types';
 
 	// Components can get data from a shared variable
@@ -31,17 +31,17 @@
 
 	// Get a reactive/rune variable initialized to the prop passed by the parent
 	// This one is set on +page.svelte
-	let countDoc = useDocument(Count, 'counters', userCount._id, userCount);
+	let countDoc = useDocument(Count, 'counters', userCount._id!, userCount);
 
 	function decrement() {
 		if (!countDoc.value) return;
 		countDoc.value.count -= 1;
-		saveDocument('counters', countDoc.value);
+		saveDocument(Count, 'counters', countDoc.value);
 	}
 	function increment() {
 		if (!countDoc.value) return;
 		countDoc.value.count += 1;
-		saveDocument('counters', countDoc.value);
+		saveDocument(Count, 'counters', countDoc.value);
 	}
 </script>
 
