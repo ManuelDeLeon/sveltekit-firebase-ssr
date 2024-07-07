@@ -21,7 +21,7 @@ Create a `.env` file at the root of the folder with the following entries:
 PUBLIC_FIREBASE_CLIENT_CONFIG=Your **client** Firebase config json, stringified
 FIREBASE_SERVER_CONFIG=Your **server** Firebase config json, stringified
 
-PUBLIC_USE_FIREBASE_EMULATOR=true|false
+PUBLIC_USE_EMULATOR=true|false
 PUBLIC_FIREBASE_EMULATOR_PROJECT=your-project-name
 PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost
 PUBLIC_FIREBASE_AUTH_EMULATOR_PORT=9099
@@ -81,13 +81,13 @@ Because reading on the server requires `firebase-admin` which uses a project's p
 
 - `/src/lib/server/firebase.ts` for the server.
 - `/src/lib/utils/firebase.ts` for the client.
-- `/src/routes/api/data.ts` to get the components' initial data from both client and server.
+- `/src/routes/+page.server.ts` to get the components' initial data from both client and server.
 
 ## Models
 
 At risk of angering the FP gods I decided to go with classes for the document models.
-`/src/lib/models/Document.ts` is the base class for Firebase documents. `_dbFields` holds the fields that will make it to the database (not every field in the model needs to be stored).
-`/src/lib/models/Counter.ts` holds the definition of the `Counter` item. The constructor adds the fields it wants to persist in the DB (in this case it's `count` and `uid`).
+`/src/lib/models/doc.ts` is the base class for Firebase documents.
+`/src/lib/models/count.ts` holds the definition of the `Count` item. The constructor adds the fields it wants to persist in the DB (in this case it's `count` and `uid`).
 
 ## Firebase reactivity
 
@@ -99,9 +99,7 @@ The `Counter` component doesn't display on the home page if the user isn't logge
 
 ## Loading user data.
 
-There's a bit of a run around when loading and SSR'ing a component which depends on user data. The component should expose a method that returns the data it needs to render correctly. The parent calls this method as part of its load (before rendering) and then feeds the data back to the component as a prop.
-
-For example, `Counter.svelte` has the method `getUserCountData` which returns the data for the logged in user. `+page.svelte` declares `let { data } = $props();` which is populated by the return of the `load` method in `+page.server.ts` (it calls `getUserCountData`). `+page.svelte` then checks if `data.userCount` has something and passes the value to the component `<Counter userCount={data.userCount} />`.
+`+page.svelte` declares `let { data } = $props();` which is populated by the return of the `load` method in `+page.server.ts`. `+page.svelte` then checks if `data.userCount` has something and passes the value to the component `<Counter userCount={data.userCount} />`.
 
 ## Update Firebase Cloud Firestore Rules
 

@@ -1,17 +1,3 @@
-<script context="module" lang="ts">
-	// Can't use native fetch because this will be called by the server during SSR
-	export async function getUserCountData(fetch: Fetch): Promise<Count> {
-		const res = await fetch(`/api/data?collectionPath=counters&createIfNone=true`);
-		if (res.ok) {
-			const userCountDataArray = await res.json();
-			return userCountDataArray[0];
-		}
-
-		const { message } = await res.json();
-		throw Error(message);
-	}
-</script>
-
 <script lang="ts">
 	import { saveDocument, useDocument } from '$lib/client/firebase.svelte';
 	import { useUser } from '$lib/client/state.svelte';
@@ -26,12 +12,12 @@
 	let {
 		userCount
 	}: {
-		userCount: Count;
+		userCount: Partial<Count>;
 	} = $props();
 
 	// Get a reactive/rune variable initialized to the prop passed by the parent
 	// This one is set on +page.svelte
-	let countDoc = useDocument(Count, 'counters', userCount._id!, userCount);
+	let countDoc = useDocument(Count, 'counters', userCount._id!, new Count(userCount));
 
 	function decrement() {
 		if (!countDoc.value) return;

@@ -32,7 +32,7 @@ import {
 	PUBLIC_FIREBASE_AUTH_EMULATOR_PORT,
 	PUBLIC_FIREBASE_CLIENT_CONFIG,
 	PUBLIC_FIREBASE_EMULATOR_PROJECT,
-	PUBLIC_USE_FIREBASE_EMULATOR,
+	PUBLIC_USE_EMULATOR,
 	PUBLIC_FIRESTORE_EMULATOR_HOST,
 	PUBLIC_FIRESTORE_EMULATOR_PORT
 } from '$env/static/public';
@@ -81,7 +81,7 @@ export function initializeFirebase() {
 		throw new Error("Can't use the Firebase client on the server.");
 	}
 	if (!app) {
-		if (PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+		if (PUBLIC_USE_EMULATOR === 'true') {
 			app = initializeApp({
 				projectId: PUBLIC_FIREBASE_EMULATOR_PROJECT,
 				apiKey: 'dummy-key',

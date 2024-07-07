@@ -8,13 +8,21 @@
 		signOut
 	} from '$lib/client/firebase.svelte';
 	import { useUser } from '$lib/client/state.svelte';
-	import { PUBLIC_USE_FIREBASE_EMULATOR } from '$env/static/public';
+	import { PUBLIC_USE_EMULATOR } from '$env/static/public';
+	import { Count } from '$lib/models/count';
 
 	// Get the user info and count data from the server (+page.server.ts)
-	let { data } = $props();
-	const dataUser = data.userInfo
-		? { uid: data.userInfo.uid, email: data.userInfo.email || null }
-		: null;
+	let {
+		data
+	}: {
+		data: {
+			userCount?: Partial<Count>;
+			userInfo?: { uid: string; email?: string };
+		};
+	} = $props();
+	const { userInfo, userCount } = data;
+
+	const dataUser = userInfo ? { uid: userInfo.uid, email: userInfo.email || null } : null;
 
 	// Set the value of the shared user variable
 	// Counter.svelte will pick up this shared value
@@ -48,7 +56,7 @@
 		to your new<br />SvelteKit app
 	</h1>
 
-	{#if user.value && data.userCount}
+	{#if user.value && userCount}
 		<div style="display: flex; flex-direction: column; gap: 0.5rem">
 			<div>
 				User data on +page.svelte: ({user.value.email})
@@ -57,10 +65,10 @@
 			<button onclick={() => signOut()}>Sign Out</button>
 		</div>
 
-		<Counter userCount={data.userCount} />
+		<Counter {userCount} />
 	{:else}
 		<div style="display: flex; flex-direction: column; gap: 0.5rem">
-			{#if PUBLIC_USE_FIREBASE_EMULATOR === 'true'}
+			{#if PUBLIC_USE_EMULATOR === 'true'}
 				<input
 					class="border border-slate-800 rounded-lg px-3 py-1"
 					type="email"

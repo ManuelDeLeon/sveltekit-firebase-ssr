@@ -1,21 +1,22 @@
-import { FIREBASE_SERVER_CONFIG } from '$env/static/private';
-import admin from 'firebase-admin';
 import type { Doc } from '$lib/models/doc';
-import {
-	PUBLIC_USE_FIREBASE_EMULATOR,
-	PUBLIC_FIREBASE_EMULATOR_PROJECT,
-	PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,
-	PUBLIC_FIRESTORE_EMULATOR_HOST,
-	PUBLIC_FIRESTORE_EMULATOR_PORT,
-	PUBLIC_FIREBASE_AUTH_EMULATOR_PORT
-} from '$env/static/public';
+import type { AnyObject } from '$lib/models/types';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import type { FieldPath, WhereFilterOp } from 'firebase-admin/firestore';
-import { getDbObject } from '$lib/misc/functions';
+
+import { FIREBASE_SERVER_CONFIG } from '$env/static/private';
+import {
+	PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,
+	PUBLIC_FIREBASE_AUTH_EMULATOR_PORT,
+	PUBLIC_FIREBASE_EMULATOR_PROJECT,
+	PUBLIC_FIRESTORE_EMULATOR_HOST,
+	PUBLIC_FIRESTORE_EMULATOR_PORT,
+	PUBLIC_USE_EMULATOR
+} from '$env/static/public';
+import admin from 'firebase-admin';
 
 function initializeFirebase() {
 	if (!admin.apps.length) {
-		if (PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+		if (PUBLIC_USE_EMULATOR === 'true') {
 			process.env.FIREBASE_AUTH_EMULATOR_HOST = `${PUBLIC_FIREBASE_AUTH_EMULATOR_HOST}:${PUBLIC_FIREBASE_AUTH_EMULATOR_PORT}`;
 			process.env.GCLOUD_PROJECT = PUBLIC_FIREBASE_EMULATOR_PROJECT;
 			process.env.FIRESTORE_EMULATOR_HOST = `${PUBLIC_FIRESTORE_EMULATOR_HOST}:${PUBLIC_FIRESTORE_EMULATOR_PORT}`;
@@ -41,42 +42,25 @@ export async function decodeToken(token: string): Promise<DecodedIdToken | null>
 	}
 }
 
-export async function getUserDocuments<T extends Doc>(
-	collectionPath: string,
-	uid: string
-): Promise<Array<T>> {
-	initializeFirebase();
-	const db = admin.firestore();
-	const querySnapshot = await db.collection(collectionPath).where('uid', '==', uid).get();
-	const list: Array<T> = [];
-	querySnapshot.forEach((doc) => {
-		const document: T = <T>doc.data(); // Just need the data on the server
-		document._id = doc.id;
-		list.push(document);
-	});
-	return list;
-}
-
 export async function createUserDocument(collectionPath: string, uid: string): Promise<Doc> {
 	initializeFirebase();
 	const db = admin.firestore();
 	const doc = await (await db.collection(collectionPath).add({ uid })).get();
 
-	const document = <Doc>doc.data(); // Just need the data on the server
+	const document = doc.data() as Doc;
 	document._id = doc.id;
 	return document;
 }
 
-type WhereClause = {
-	fieldPath: string | FieldPath;
+export type WhereClause = {
+	fieldPath: FieldPath | string;
 	opStr: WhereFilterOp;
-	value: any; // eslint-disable-line
+	value: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
-
 export async function getDocuments<T extends Doc>(
-	type: { new (): T },
+	type: { new (data: AnyObject): T },
 	collectionPath: string,
-	search: WhereClause | Array<WhereClause>
+	search: Array<WhereClause> | WhereClause
 ): Promise<Array<T>> {
 	initializeFirebase();
 	const db = admin.firestore();
@@ -93,8 +77,7 @@ export async function getDocuments<T extends Doc>(
 	const querySnapshot = await query.get();
 	const list: Array<T> = [];
 	querySnapshot.forEach((doc) => {
-		const document = new type();
-		document._load(doc.data());
+		const document = new type(doc.data());
 		document._id = doc.id;
 		list.push(document);
 	});
@@ -102,7 +85,7 @@ export async function getDocuments<T extends Doc>(
 }
 
 export async function getDocument<T extends Doc>(
-	type: { new (): T },
+	type: { new (data: AnyObject): T },
 	collectionPath: string,
 	id: string
 ): Promise<T | undefined> {
@@ -112,27 +95,24 @@ export async function getDocument<T extends Doc>(
 	const doc = await db.collection(collectionPath).doc(id).get();
 	const data = doc.data();
 	if (data) {
-		const document = new type();
-		document._load(data);
+		const document = new type(data);
 		document._id = doc.id;
 		return document;
 	}
 }
 
 export async function saveDocument<T extends Doc>(
-	type: { new (): T },
 	collectionPath: string,
-	document: T
+	docToSave: T
 ): Promise<T> {
 	initializeFirebase();
 	const db = admin.firestore();
-	const dbObject = getDbObject(type, document);
 	const collection = db.collection(collectionPath);
-	if (document._id) {
-		await collection.doc(document._id).set(dbObject);
+	if (docToSave._id) {
+		await collection.doc(docToSave._id).set(docToSave._obj());
 	} else {
-		const ref = await collection.add(dbObject);
-		document._id = ref.id;
+		const ref = await collection.add(docToSave._obj());
+		docToSave._id = ref.id;
 	}
-	return document;
+	return docToSave;
 }
