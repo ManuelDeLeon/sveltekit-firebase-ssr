@@ -28,6 +28,14 @@
 	// Counter.svelte will pick up this shared value
 	const user = useUser(dataUser);
 
+	$effect(() => {
+		if (user.value && !userCount) {
+			// User's login code runs after invalidateAll() so if the user logs out and then
+			// back in, userCount (from +page.server.ts) has stale data.
+			location.reload();
+		}
+	});
+
 	let email = $state('');
 	let password = $state('');
 
